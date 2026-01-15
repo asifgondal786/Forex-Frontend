@@ -32,6 +32,7 @@ class FirebaseConfig {
     messagingSenderId: '238745148522',
     projectId: 'forexcompanion-e5a28',
     authDomain: 'forexcompanion-e5a28.firebaseapp.com',
+    databaseURL: 'https://forexcompanion-e5a28-default-rtdb.firebaseio.com',
     storageBucket: 'forexcompanion-e5a28.firebasestorage.app',
     measurementId: 'G-F24QVTGL77',
   );
