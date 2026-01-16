@@ -5,7 +5,8 @@ class FirebaseConfig {
   // It's strongly recommended to load the API key from a secure source,
   // such as environment variables, rather than hardcoding it.
   // Use --dart-define=FIREBASE_API_KEY=YOUR_API_KEY
-  static const String _apiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  // For local development, you can temporarily hardcode it here.
+  static const String _apiKey = 'AIzaSyAGPIvZvdbyrXwRJonYmSZvUHhGEmapec8'; 
 
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
