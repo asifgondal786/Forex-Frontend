@@ -182,7 +182,7 @@ class _ForexFeedWidgetState extends State<ForexFeedWidget> {
 
           // Forex Cards Carousel
           SizedBox(
-            height: isMobile ? 200 : 180,
+            height: isMobile ? 208 : 188,
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) {
