@@ -1,12 +1,13 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
-  // It's strongly recommended to load the API key from a secure source,
-  // such as environment variables, rather than hardcoding it.
-  // Use --dart-define=GEMINI_API_KEY=YOUR_API_KEY
-  static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
+  // Load API key from .env file
+  static String get _apiKey {
+    return dotenv.env['GEMINI_API_KEY'] ?? '';
+  }
 
   late final GenerativeModel? _model;
   late final GenerativeModel? _chatModel;
