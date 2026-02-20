@@ -101,16 +101,38 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (_isSendingEmail || _emailCooldown > 0) {
       return;
     }
+    final user = _user;
+    if (user == null || (user.email ?? '').isEmpty) {
+      setState(() {
+        _errorMessage = 'No signed-in email user found. Please sign in again.';
+        _infoMessage = null;
+      });
+      return;
+    }
+    if (user.emailVerified) {
+      setState(() {
+        _errorMessage = null;
+        _infoMessage = 'Email is already verified.';
+      });
+      return;
+    }
+
     setState(() {
       _isSendingEmail = true;
       _errorMessage = null;
       _infoMessage = null;
     });
     try {
-      await _user?.sendEmailVerification();
+      await _sendVerificationEmailWithFallback(user);
       if (mounted) {
-        setState(() => _infoMessage = 'Verification email sent.');
+        setState(() => _infoMessage = 'Verification email sent to ${user.email}.');
         _startEmailCooldown();
+      }
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'Failed to send email: ${_friendlyEmailError(e.code)}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -120,6 +142,43 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (mounted) {
         setState(() => _isSendingEmail = false);
       }
+    }
+  }
+
+  Future<void> _sendVerificationEmailWithFallback(firebase_auth.User user) async {
+    try {
+      await user.sendEmailVerification(
+        firebase_auth.ActionCodeSettings(
+          url: 'https://forexcompanion-e5a28.firebaseapp.com',
+          handleCodeInApp: false,
+        ),
+      );
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      final code = e.code.toLowerCase().trim();
+      if (code == 'invalid-continue-uri' ||
+          code == 'unauthorized-continue-uri' ||
+          code == 'missing-continue-uri') {
+        await user.sendEmailVerification();
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  String _friendlyEmailError(String code) {
+    switch (code.toLowerCase().trim()) {
+      case 'too-many-requests':
+        return 'too many requests. Please wait before retrying.';
+      case 'network-request-failed':
+        return 'network issue. Check internet and retry.';
+      case 'invalid-email':
+        return 'invalid email address.';
+      case 'unauthorized-continue-uri':
+      case 'invalid-continue-uri':
+      case 'missing-continue-uri':
+        return 'email action link configuration issue.';
+      default:
+        return code;
     }
   }
 

@@ -325,6 +325,8 @@ class ApiService {
     bool? autonomousMode,
     String? autonomousProfile,
     double? autonomousMinConfidence,
+    bool? autonomousStageAlerts,
+    int? autonomousStageIntervalSeconds,
     Map<String, dynamic>? channelSettings,
   }) async {
     try {
@@ -343,6 +345,12 @@ class ApiService {
       }
       if (autonomousMinConfidence != null) {
         body['autonomous_min_confidence'] = autonomousMinConfidence;
+      }
+      if (autonomousStageAlerts != null) {
+        body['autonomous_stage_alerts'] = autonomousStageAlerts;
+      }
+      if (autonomousStageIntervalSeconds != null) {
+        body['autonomous_stage_interval_seconds'] = autonomousStageIntervalSeconds;
       }
       if (channelSettings != null) body['channel_settings'] = channelSettings;
 
@@ -418,6 +426,75 @@ class ApiService {
     } catch (e) {
       debugPrint('Error sending autonomous study alert: $e');
       throw ApiException('Error sending autonomous study alert: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> sendAutonomousAwarenessAlert({
+    required String stage,
+    String pair = 'EUR/USD',
+    String? userInstruction,
+    String? priority,
+    String? stageContext,
+    bool force = false,
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'stage': stage.trim().toLowerCase(),
+        'pair': pair.trim().toUpperCase(),
+        'force': force,
+      };
+      if (userInstruction != null && userInstruction.trim().isNotEmpty) {
+        body['user_instruction'] = userInstruction.trim();
+      }
+      if (priority != null && priority.trim().isNotEmpty) {
+        body['priority'] = priority.trim().toLowerCase();
+      }
+      if (stageContext != null && stageContext.trim().isNotEmpty) {
+        body['stage_context'] = stageContext.trim();
+      }
+
+      final headers = await _buildHeaders();
+      final response = await _client
+          .post(
+            Uri.parse('$baseUrl/api/notifications/autonomous-awareness'),
+            headers: headers,
+            body: json.encode(body),
+          )
+          .timeout(_timeout);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error sending autonomous awareness alert: $e');
+      throw ApiException('Error sending autonomous awareness alert: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getDeepMarketStudy({
+    String pair = 'EUR/USD',
+    int maxHeadlinesPerSource = 3,
+  }) async {
+    try {
+      final headers = await _buildHeaders();
+      final uri = Uri.parse('$baseUrl/api/notifications/deep-study').replace(
+        queryParameters: {
+          'pair': pair.trim().toUpperCase(),
+          'max_headlines_per_source': '$maxHeadlinesPerSource',
+        },
+      );
+      final response =
+          await _client.get(uri, headers: headers).timeout(_timeout);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error fetching deep market study: $e');
+      return {
+        'pair': pair.trim().toUpperCase(),
+        'confidence_band': 'low',
+        'recommendation': 'wait_for_confirmation',
+        'source_coverage': {
+          'requested': 0,
+          'analyzed': 0,
+          'coverage_ratio': 0.0,
+        },
+      };
     }
   }
 

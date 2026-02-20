@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/firebase_service.dart';
 import '../../core/models/user.dart' as app_user;
 import '../../core/widgets/app_background.dart';
@@ -29,6 +30,10 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
+  bool _accountExistsHint = false;
+  static final RegExp _invisibleChars = RegExp(
+    r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
+  );
 
   @override
   void dispose() {
@@ -45,9 +50,10 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   bool _validateInputs() {
+    final normalizedEmail = _normalizeEmail(_emailController.text);
     if (_firstNameController.text.isEmpty || 
         _secondNameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
+        normalizedEmail.isEmpty ||
         _mobileController.text.isEmpty ||
         _addressController.text.isEmpty ||
         _passwordController.text.isEmpty ||
@@ -56,8 +62,8 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
     
-    if (!_emailController.text.contains('@') || !_emailController.text.contains('.com')) {
-      setState(() => _errorMessage = 'Please enter a valid Gmail address');
+    if (!_isValidEmail(normalizedEmail)) {
+      setState(() => _errorMessage = 'Please enter a valid email address');
       return false;
     }
     
@@ -86,15 +92,18 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _handleSignup() async {
     if (!_validateInputs()) return;
+    final normalizedEmail = _normalizeEmail(_emailController.text);
+    _emailController.text = normalizedEmail;
     
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _accountExistsHint = false;
     });
 
     try {
       final user = await _firebaseService.signUpWithEmail(
-        _emailController.text.trim(),
+        normalizedEmail,
         _passwordController.text,
       );
 
@@ -103,7 +112,7 @@ class _SignupScreenState extends State<SignupScreen> {
           final appUser = app_user.User(
             id: user.uid,
             name: '${_firstNameController.text.trim()} ${_secondNameController.text.trim()}',
-            email: _emailController.text.trim(),
+            email: normalizedEmail,
             createdAt: DateTime.now(),
             preferences: {
               'username': _usernameController.text.trim(),
@@ -113,15 +122,27 @@ class _SignupScreenState extends State<SignupScreen> {
             },
           );
           await _firebaseService.createUserDocument(appUser);
+          var verificationMessage =
+              'Account created! Verification email sent to ${user.email ?? normalizedEmail}.';
           try {
             await user.sendEmailVerification();
+          } on firebase_auth.FirebaseAuthException catch (e) {
+            if (mounted) {
+              verificationMessage =
+                  'Account created, but verification email failed (${_friendlyVerificationError(e.code)}). Use Resend on Verify screen.';
+            }
+            debugPrint('Email verification failed (${e.code}): ${e.message}');
           } catch (e) {
             debugPrint('Email verification failed: $e');
+            if (mounted) {
+              verificationMessage =
+                  'Account created, but verification email could not be sent. Use Resend on Verify screen.';
+            }
           }
 
           debugPrint('Signup successful');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created! Verify your email.')),
+            SnackBar(content: Text(verificationMessage)),
           );
           Navigator.pushNamedAndRemoveUntil(
             context,
@@ -132,14 +153,66 @@ class _SignupScreenState extends State<SignupScreen> {
           setState(() => _errorMessage = 'Signup failed');
         }
       }
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      final code = e.code.toLowerCase().trim();
+      setState(() {
+        _accountExistsHint = code == 'email-already-in-use';
+        _errorMessage = _friendlySignupError(code);
+      });
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = 'Signup failed: $e');
+        setState(() => _errorMessage = 'Signup failed. Please try again.');
       }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  bool _isValidEmail(String email) {
+    final pattern = RegExp(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$');
+    return pattern.hasMatch(email);
+  }
+
+  String _normalizeEmail(String email) {
+    return email
+        .replaceAll(_invisibleChars, '')
+        .replaceAll(RegExp(r'\s+'), '')
+        .trim()
+        .toLowerCase();
+  }
+
+  String _friendlySignupError(String code) {
+    switch (code) {
+      case 'email-already-in-use':
+        return 'This email is already registered. Sign in or reset password.';
+      case 'invalid-email':
+        return 'This email format is invalid.';
+      case 'weak-password':
+        return 'Password is too weak. Use at least 8 characters.';
+      case 'operation-not-allowed':
+        return 'Email/password signup is disabled in Firebase config.';
+      case 'network-request-failed':
+        return 'Network issue detected. Check internet and try again.';
+      default:
+        return 'Signup failed ($code). Please try again.';
+    }
+  }
+
+  String _friendlyVerificationError(String code) {
+    switch (code.toLowerCase().trim()) {
+      case 'too-many-requests':
+        return 'too many requests';
+      case 'network-request-failed':
+        return 'network issue';
+      case 'invalid-email':
+        return 'invalid email';
+      case 'user-disabled':
+        return 'user disabled';
+      default:
+        return code;
     }
   }
 
@@ -255,6 +328,31 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ],
                               ),
                             ),
+                          if (_accountExistsHint) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: () => Navigator.pushReplacementNamed(
+                                  context,
+                                  AppRoutes.login,
+                                ),
+                                icon: const Icon(
+                                  Icons.login,
+                                  size: 16,
+                                  color: Color(0xFF93C5FD),
+                                ),
+                                label: const Text(
+                                  'Go to Sign In',
+                                  style: TextStyle(
+                                    color: Color(0xFF93C5FD),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                           if (_errorMessage != null) const SizedBox(height: 20),
 
                           // Title Field (Optional)

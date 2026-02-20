@@ -25,6 +25,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
+  static final RegExp _invisibleChars = RegExp(
+    r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
+  );
 
   @override
   void dispose() {
@@ -35,6 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (!_validateInputs()) return;
+    final normalizedEmail = _normalizeEmail(_emailController.text);
+    _emailController.text = normalizedEmail;
     
     setState(() {
       _isLoading = true;
@@ -43,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final user = await _firebaseService.signInWithEmail(
-        _emailController.text.trim(),
+        normalizedEmail,
         _passwordController.text,
       );
 
@@ -52,12 +57,16 @@ class _LoginScreenState extends State<LoginScreen> {
           debugPrint('Login successful');
           widget.onLoginSuccess();
         } else {
-          setState(() => _errorMessage = 'Invalid email or password');
+          setState(() => _errorMessage = 'Unable to sign in. Please try again.');
         }
       }
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      final code = e.code.toLowerCase().trim();
+      setState(() => _errorMessage = _friendlyLoginError(code));
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = 'Login failed: $e');
+        setState(() => _errorMessage = 'Login failed. Please try again.');
       }
     } finally {
       if (mounted) {
@@ -88,8 +97,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final email = controller.text.trim();
-                if (email.isEmpty || !email.contains('@')) {
+                final email = _normalizeEmail(controller.text);
+                controller.text = email;
+                if (!_isValidEmail(email)) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Enter a valid email')),
                   );
@@ -101,7 +111,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Password reset email sent.')),
+                      SnackBar(
+                        content: Text('Password reset email sent to $email'),
+                      ),
+                    );
+                  }
+                } on firebase_auth.FirebaseAuthException catch (e) {
+                  if (mounted) {
+                    final code = e.code.toLowerCase().trim();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(_friendlyResetError(code)),
+                      ),
                     );
                   }
                 } catch (e) {
@@ -121,17 +142,65 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool _validateInputs() {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    final email = _normalizeEmail(_emailController.text);
+    if (email.isEmpty || _passwordController.text.isEmpty) {
       setState(() => _errorMessage = 'Please fill all fields');
       return false;
     }
     
-    if (!_emailController.text.contains('@')) {
+    if (!_isValidEmail(email)) {
       setState(() => _errorMessage = 'Please enter a valid email');
       return false;
     }
     
     return true;
+  }
+
+  bool _isValidEmail(String email) {
+    final pattern = RegExp(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$');
+    return pattern.hasMatch(email);
+  }
+
+  String _normalizeEmail(String email) {
+    return email
+        .replaceAll(_invisibleChars, '')
+        .replaceAll(RegExp(r'\s+'), '')
+        .trim()
+        .toLowerCase();
+  }
+
+  String _friendlyLoginError(String code) {
+    switch (code) {
+      case 'invalid-credential':
+      case 'wrong-password':
+      case 'user-not-found':
+        return 'Email or password is incorrect.';
+      case 'invalid-email':
+        return 'This email format is invalid.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please wait and try again.';
+      case 'network-request-failed':
+        return 'Network issue detected. Check internet and try again.';
+      default:
+        return 'Login failed ($code). Please try again.';
+    }
+  }
+
+  String _friendlyResetError(String code) {
+    switch (code) {
+      case 'invalid-email':
+        return 'Reset failed: invalid email format.';
+      case 'user-not-found':
+        return 'Reset failed: no account found for this email.';
+      case 'too-many-requests':
+        return 'Reset blocked: too many attempts, try again later.';
+      case 'network-request-failed':
+        return 'Reset failed: network issue, check internet.';
+      default:
+        return 'Reset failed ($code).';
+    }
   }
 
   @override
