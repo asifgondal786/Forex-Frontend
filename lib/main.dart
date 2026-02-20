@@ -13,6 +13,7 @@ import 'providers/user_provider.dart';
 import 'providers/header_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/account_connection_provider.dart';
+import 'providers/agent_orchestrator_provider.dart';
 import 'helpers/mock_data_helper.dart';
 
 // Toggle Firebase initialization (Auth/Storage/etc)
@@ -75,7 +76,8 @@ class ForexCompanionApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Initialize services
     final apiService = ApiService();
-    final firebaseService = (useFirebaseAuth && firebaseReady) ? FirebaseService() : null;
+    final firebaseService =
+        (useFirebaseAuth && firebaseReady) ? FirebaseService() : null;
 
     return MultiProvider(
       providers: [
@@ -83,7 +85,10 @@ class ForexCompanionApp extends StatelessWidget {
         Provider<ApiService>.value(value: apiService),
         if (firebaseService != null)
           Provider<FirebaseService>.value(value: firebaseService),
-        Provider<LiveUpdatesService>(create: (_) => LiveUpdatesService()),
+        Provider<LiveUpdatesService>(
+          create: (_) => LiveUpdatesService(),
+          dispose: (_, service) => service.dispose(),
+        ),
 
         // Theme Provider
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
@@ -127,6 +132,9 @@ class ForexCompanionApp extends StatelessWidget {
             provider.loadConnections();
             return provider;
           },
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AgentOrchestratorProvider(apiService: apiService),
         ),
       ],
       child: Consumer<ThemeProvider>(
