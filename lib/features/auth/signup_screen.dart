@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../services/api_service.dart';
 import '../../services/firebase_service.dart';
 import '../../core/models/user.dart' as app_user;
 import '../../core/widgets/app_background.dart';
@@ -15,6 +16,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final ApiService _apiService = ApiService();
   final FirebaseService _firebaseService = FirebaseService();
   final _titleController = TextEditingController();
   final _firstNameController = TextEditingController();
@@ -37,6 +39,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
+    _apiService.dispose();
     _titleController.dispose();
     _firstNameController.dispose();
     _secondNameController.dispose();
@@ -125,7 +128,13 @@ class _SignupScreenState extends State<SignupScreen> {
           var verificationMessage =
               'Account created! Verification email sent to ${user.email ?? normalizedEmail}.';
           try {
-            await user.sendEmailVerification();
+            final response = await _apiService.requestEmailVerification(
+              email: normalizedEmail,
+            );
+            final backendMessage = (response['message'] as String?)?.trim();
+            if (backendMessage != null && backendMessage.isNotEmpty) {
+              verificationMessage = backendMessage;
+            }
           } on firebase_auth.FirebaseAuthException catch (e) {
             if (mounted) {
               verificationMessage =
@@ -133,10 +142,19 @@ class _SignupScreenState extends State<SignupScreen> {
             }
             debugPrint('Email verification failed (${e.code}): ${e.message}');
           } catch (e) {
-            debugPrint('Email verification failed: $e');
-            if (mounted) {
-              verificationMessage =
-                  'Account created, but verification email could not be sent. Use Resend on Verify screen.';
+            debugPrint('Backend verification email failed: $e');
+            try {
+              await _sendVerificationEmail(user);
+            } on firebase_auth.FirebaseAuthException catch (fe) {
+              if (mounted) {
+                verificationMessage =
+                    'Account created, but verification email failed (${_friendlyVerificationError(fe.code)}). Use Resend on Verify screen.';
+              }
+            } catch (_) {
+              if (mounted) {
+                verificationMessage =
+                    'Account created, but verification email could not be sent. Use Resend on Verify screen.';
+              }
             }
           }
 
@@ -174,6 +192,36 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isValidEmail(String email) {
     final pattern = RegExp(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$');
     return pattern.hasMatch(email);
+  }
+
+  Future<void> _sendVerificationEmail(firebase_auth.User user) async {
+    final continueUrl = _resolveEmailContinueUrl();
+    try {
+      await user.sendEmailVerification(
+        firebase_auth.ActionCodeSettings(
+          url: continueUrl,
+          handleCodeInApp: false,
+        ),
+      );
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      final code = e.code.toLowerCase().trim();
+      if (code == 'invalid-continue-uri' ||
+          code == 'unauthorized-continue-uri' ||
+          code == 'missing-continue-uri') {
+        await user.sendEmailVerification();
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  String _resolveEmailContinueUrl() {
+    final base = Uri.base;
+    if ((base.scheme == 'http' || base.scheme == 'https') &&
+        base.host.trim().isNotEmpty) {
+      return base.origin;
+    }
+    return 'https://forexcompanion-e5a28.firebaseapp.com';
   }
 
   String _normalizeEmail(String email) {

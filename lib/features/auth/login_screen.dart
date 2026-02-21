@@ -3,6 +3,7 @@ import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/firebase_service.dart';
+import '../../services/api_service.dart';
 import '../../core/widgets/app_background.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final FirebaseService _firebaseService = FirebaseService();
+  final ApiService _apiService = ApiService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
@@ -33,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _apiService.dispose();
     super.dispose();
   }
 
@@ -77,9 +80,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _showForgotPasswordDialog() async {
     final controller = TextEditingController(text: _emailController.text.trim());
+    final parentContext = context;
+    final messenger = ScaffoldMessenger.of(parentContext);
+    final parentNavigator = Navigator.of(parentContext, rootNavigator: true);
     await showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Reset Password'),
           content: TextField(
@@ -92,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
@@ -100,34 +106,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 final email = _normalizeEmail(controller.text);
                 controller.text = email;
                 if (!_isValidEmail(email)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(content: Text('Enter a valid email')),
                   );
                   return;
                 }
                 try {
-                  await firebase_auth.FirebaseAuth.instance
-                      .sendPasswordResetEmail(email: email);
+                  final response = await _apiService.requestPasswordReset(
+                    email: email,
+                  );
+                  final message =
+                      (response['message'] as String?) ??
+                      'If an account exists for this email, reset instructions have been sent.';
                   if (mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Password reset email sent to $email'),
-                      ),
-                    );
-                  }
-                } on firebase_auth.FirebaseAuthException catch (e) {
-                  if (mounted) {
-                    final code = e.code.toLowerCase().trim();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(_friendlyResetError(code)),
-                      ),
-                    );
+                    if (parentNavigator.canPop()) {
+                      parentNavigator.pop();
+                    }
+                    messenger.showSnackBar(SnackBar(content: Text(message)));
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(content: Text('Reset failed: $e')),
                     );
                   }
@@ -139,6 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       },
     );
+    controller.dispose();
   }
 
   bool _validateInputs() {
@@ -185,21 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
         return 'Network issue detected. Check internet and try again.';
       default:
         return 'Login failed ($code). Please try again.';
-    }
-  }
-
-  String _friendlyResetError(String code) {
-    switch (code) {
-      case 'invalid-email':
-        return 'Reset failed: invalid email format.';
-      case 'user-not-found':
-        return 'Reset failed: no account found for this email.';
-      case 'too-many-requests':
-        return 'Reset blocked: too many attempts, try again later.';
-      case 'network-request-failed':
-        return 'Reset failed: network issue, check internet.';
-      default:
-        return 'Reset failed ($code).';
     }
   }
 

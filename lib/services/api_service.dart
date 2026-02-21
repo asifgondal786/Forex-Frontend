@@ -48,6 +48,9 @@ class ApiService {
     'DEV_AUTH_SHARED_SECRET',
     defaultValue: '',
   );
+  static final RegExp _invisibleChars = RegExp(
+    r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
+  );
 
   // Default dev user ID for local development when no Firebase auth
   static const String _defaultDevUserId = 'dev_user_001';
@@ -81,6 +84,14 @@ class ApiService {
       return value.substring(0, value.length - 1);
     }
     return value;
+  }
+
+  static String _normalizeEmail(String rawEmail) {
+    return rawEmail
+        .replaceAll(_invisibleChars, '')
+        .replaceAll(RegExp(r'\s+'), '')
+        .trim()
+        .toLowerCase();
   }
 
   Map<String, String> get _baseHeaders => {
@@ -188,6 +199,52 @@ class ApiService {
   }
 
   // ========== USER ENDPOINTS ==========
+
+  Future<Map<String, dynamic>> requestPasswordReset({
+    required String email,
+  }) async {
+    final normalizedEmail = _normalizeEmail(email);
+    if (normalizedEmail.isEmpty) {
+      throw ApiException('Email is required for password reset.');
+    }
+
+    try {
+      final response = await _client
+          .post(
+            Uri.parse('$baseUrl/auth/password-reset'),
+            headers: _baseHeaders,
+            body: json.encode({'email': normalizedEmail}),
+          )
+          .timeout(_timeout);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error requesting password reset: $e');
+      throw ApiException('Error requesting password reset: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> requestEmailVerification({
+    required String email,
+  }) async {
+    final normalizedEmail = _normalizeEmail(email);
+    if (normalizedEmail.isEmpty) {
+      throw ApiException('Email is required for verification.');
+    }
+
+    try {
+      final response = await _client
+          .post(
+            Uri.parse('$baseUrl/auth/email-verification'),
+            headers: _baseHeaders,
+            body: json.encode({'email': normalizedEmail}),
+          )
+          .timeout(_timeout);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error requesting verification email: $e');
+      throw ApiException('Error requesting verification email: $e');
+    }
+  }
 
   Future<User> getCurrentUser() async {
     try {
