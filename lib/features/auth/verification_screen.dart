@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import '../../core/widgets/app_background.dart';
+import '../../services/api_service.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -15,6 +16,7 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
+  final ApiService _apiService = ApiService();
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
   final _auth = firebase_auth.FirebaseAuth.instance;
@@ -27,6 +29,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
   String? _verificationId;
   String? _errorMessage;
   String? _infoMessage;
+  static const bool _enablePhoneVerification = bool.fromEnvironment(
+    'ENABLE_PHONE_VERIFICATION',
+    defaultValue: false,
+  );
 
   firebase_auth.User? get _user => _auth.currentUser;
 
@@ -41,6 +47,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   void dispose() {
+    _apiService.dispose();
     _autoRefreshTimer?.cancel();
     _emailCooldownTimer?.cancel();
     _phoneController.dispose();
@@ -123,6 +130,26 @@ class _VerificationScreenState extends State<VerificationScreen> {
       _infoMessage = null;
     });
     try {
+      final backendResponse = await _apiService.requestEmailVerification(
+        email: user.email ?? '',
+      );
+      final backendMessage = (backendResponse['message'] as String?)?.trim();
+      if (mounted) {
+        setState(
+          () => _infoMessage = backendMessage?.isNotEmpty == true
+              ? backendMessage
+              : 'Verification email sent to ${user.email}.',
+        );
+        _startEmailCooldown();
+      }
+      return;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Backend verification email failed, falling back: $e');
+      }
+    }
+
+    try {
       await _sendVerificationEmailWithFallback(user);
       if (mounted) {
         setState(() => _infoMessage = 'Verification email sent to ${user.email}.');
@@ -146,10 +173,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Future<void> _sendVerificationEmailWithFallback(firebase_auth.User user) async {
+    final continueUrl = _resolveEmailContinueUrl();
     try {
       await user.sendEmailVerification(
         firebase_auth.ActionCodeSettings(
-          url: 'https://forexcompanion-e5a28.firebaseapp.com',
+          url: continueUrl,
           handleCodeInApp: false,
         ),
       );
@@ -163,6 +191,15 @@ class _VerificationScreenState extends State<VerificationScreen> {
       }
       rethrow;
     }
+  }
+
+  String _resolveEmailContinueUrl() {
+    final base = Uri.base;
+    if ((base.scheme == 'http' || base.scheme == 'https') &&
+        base.host.trim().isNotEmpty) {
+      return base.origin;
+    }
+    return 'https://forexcompanion-e5a28.firebaseapp.com';
   }
 
   String _friendlyEmailError(String code) {
@@ -264,6 +301,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     codeAutoRetrievalTimeout: (verificationId) {
                       safeSetModal(() => _verificationId = verificationId);
                     },
+                  );
+                }
+              } on firebase_auth.FirebaseAuthException catch (e) {
+                final code = e.code.toLowerCase().trim();
+                if (code == 'operation-not-allowed') {
+                  safeSetModal(
+                    () => dialogError =
+                        'Phone provider is disabled in Firebase. Enable Phone in Authentication > Sign-in method.',
+                  );
+                } else {
+                  safeSetModal(
+                    () => dialogError = 'Phone verification error: ${e.message ?? code}',
                   );
                 }
               } catch (e) {
@@ -399,8 +448,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     final userEmail = _user?.email ?? '';
-    final emailButtonLabel =
-        _emailCooldown > 0 ? 'Resend in ${_emailCooldown}s' : 'Send Verification Email';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -435,7 +482,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Complete email and phone verification to continue.',
+                          _enablePhoneVerification
+                              ? 'Complete email and phone verification to continue.'
+                              : 'Complete email verification to continue.',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[500],
@@ -455,20 +504,26 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ),
                         const SizedBox(height: 12),
                         if (!_emailVerified) ...[
-                          Row(
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
                             children: [
                               ElevatedButton(
-                                onPressed:
-                                    (_emailCooldown > 0 || _isSendingEmail) ? null : _sendEmailVerification,
+                                onPressed: (_emailCooldown > 0 || _isSendingEmail)
+                                    ? null
+                                    : _sendEmailVerification,
                                 child: _isSendingEmail
                                     ? const SizedBox(
                                         width: 16,
                                         height: 16,
                                         child: CircularProgressIndicator(strokeWidth: 2),
                                       )
-                                    : Text(emailButtonLabel),
+                                    : Text(
+                                        _emailCooldown > 0
+                                            ? 'Resend ${_emailCooldown}s'
+                                            : 'Send Verification',
+                                      ),
                               ),
-                              const SizedBox(width: 12),
                               OutlinedButton(
                                 onPressed: _isRefreshing ? null : _refreshUser,
                                 child: _isRefreshing
@@ -489,29 +544,35 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           const SizedBox(height: 20),
                         ],
 
-                        _buildStatusRow(
-                          title: 'Phone',
-                          subtitle: _phoneVerified
-                              ? (_user?.phoneNumber ?? '')
-                              : 'Not verified',
-                          isVerified: _phoneVerified,
-                        ),
-                        const SizedBox(height: 12),
-
-                        if (!_phoneVerified) ...[
-                          SizedBox(
-                            width: isMobile ? double.infinity : 220,
-                            child: ElevatedButton.icon(
-                              onPressed: _showPhoneVerificationDialog,
-                              icon: const Icon(Icons.sms),
-                              label: const Text('Verify Phone'),
-                            ),
+                        if (_enablePhoneVerification) ...[
+                          _buildStatusRow(
+                            title: 'Phone',
+                            subtitle: _phoneVerified
+                                ? (_user?.phoneNumber ?? '')
+                                : 'Not verified',
+                            isVerified: _phoneVerified,
                           ),
                           const SizedBox(height: 12),
+                          if (!_phoneVerified) ...[
+                            SizedBox(
+                              width: isMobile ? double.infinity : 220,
+                              child: ElevatedButton.icon(
+                                onPressed: _showPhoneVerificationDialog,
+                                icon: const Icon(Icons.sms),
+                                label: const Text('Verify Phone'),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              kIsWeb
+                                  ? 'You will complete a reCAPTCHA before receiving the SMS.'
+                                  : 'We will send an SMS code to verify your number.',
+                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                            ),
+                          ],
+                        ] else ...[
                           Text(
-                            kIsWeb
-                                ? 'You will complete a reCAPTCHA before receiving the SMS.'
-                                : 'We will send an SMS code to verify your number.',
+                            'Phone verification is currently disabled for this project.',
                             style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                           ),
                         ],
