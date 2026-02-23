@@ -3,7 +3,6 @@ import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/firebase_service.dart';
-import '../../services/api_service.dart';
 import '../../core/widgets/app_background.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,29 +19,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final FirebaseService _firebaseService = FirebaseService();
-  final ApiService _apiService = ApiService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
-  static final RegExp _invisibleChars = RegExp(
-    r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
-  );
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _apiService.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
     if (!_validateInputs()) return;
-    final normalizedEmail = _normalizeEmail(_emailController.text);
-    _emailController.text = normalizedEmail;
     
     setState(() {
       _isLoading = true;
@@ -51,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final user = await _firebaseService.signInWithEmail(
-        normalizedEmail,
+        _emailController.text.trim(),
         _passwordController.text,
       );
 
@@ -60,16 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
           debugPrint('Login successful');
           widget.onLoginSuccess();
         } else {
-          setState(() => _errorMessage = 'Unable to sign in. Please try again.');
+          setState(() => _errorMessage = 'Invalid email or password');
         }
       }
-    } on firebase_auth.FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      final code = e.code.toLowerCase().trim();
-      setState(() => _errorMessage = _friendlyLoginError(code));
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = 'Login failed. Please try again.');
+        setState(() => _errorMessage = 'Login failed: $e');
       }
     } finally {
       if (mounted) {
@@ -79,65 +67,71 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _showForgotPasswordDialog() async {
-    final message = await showDialog<String>(
+    final controller = TextEditingController(text: _emailController.text.trim());
+    await showDialog(
       context: context,
-      builder: (_) => _ForgotPasswordDialog(
-        apiService: _apiService,
-        initialEmail: _emailController.text.trim(),
-        normalizeEmail: _normalizeEmail,
-        isValidEmail: _isValidEmail,
-      ),
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reset Password'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              hintText: 'you@example.com',
+            ),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final email = controller.text.trim();
+                if (email.isEmpty || !email.contains('@')) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter a valid email')),
+                  );
+                  return;
+                }
+                try {
+                  await firebase_auth.FirebaseAuth.instance
+                      .sendPasswordResetEmail(email: email);
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Password reset email sent.')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Reset failed: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Send'),
+            ),
+          ],
+        );
+      },
     );
-
-    if (!mounted || message == null || message.isEmpty) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   bool _validateInputs() {
-    final email = _normalizeEmail(_emailController.text);
-    if (email.isEmpty || _passwordController.text.isEmpty) {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() => _errorMessage = 'Please fill all fields');
       return false;
     }
     
-    if (!_isValidEmail(email)) {
+    if (!_emailController.text.contains('@')) {
       setState(() => _errorMessage = 'Please enter a valid email');
       return false;
     }
     
     return true;
-  }
-
-  bool _isValidEmail(String email) {
-    final pattern = RegExp(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$');
-    return pattern.hasMatch(email);
-  }
-
-  String _normalizeEmail(String email) {
-    return email
-        .replaceAll(_invisibleChars, '')
-        .replaceAll(RegExp(r'\s+'), '')
-        .trim()
-        .toLowerCase();
-  }
-
-  String _friendlyLoginError(String code) {
-    switch (code) {
-      case 'invalid-credential':
-      case 'wrong-password':
-      case 'user-not-found':
-        return 'Email or password is incorrect.';
-      case 'invalid-email':
-        return 'This email format is invalid.';
-      case 'user-disabled':
-        return 'This account has been disabled.';
-      case 'too-many-requests':
-        return 'Too many attempts. Please wait and try again.';
-      case 'network-request-failed':
-        return 'Network issue detected. Check internet and try again.';
-      default:
-        return 'Login failed ($code). Please try again.';
-    }
   }
 
   @override
@@ -570,116 +564,6 @@ class _LoginScreenState extends State<LoginScreen> {
               vertical: 14,
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ForgotPasswordDialog extends StatefulWidget {
-  final ApiService apiService;
-  final String initialEmail;
-  final String Function(String) normalizeEmail;
-  final bool Function(String) isValidEmail;
-
-  const _ForgotPasswordDialog({
-    required this.apiService,
-    required this.initialEmail,
-    required this.normalizeEmail,
-    required this.isValidEmail,
-  });
-
-  @override
-  State<_ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
-}
-
-class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
-  late final TextEditingController _controller;
-  bool _isSubmitting = false;
-  String? _inlineError;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialEmail);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final email = widget.normalizeEmail(_controller.text);
-    _controller.text = email;
-    if (!widget.isValidEmail(email)) {
-      setState(() => _inlineError = 'Enter a valid email');
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-      _inlineError = null;
-    });
-
-    try {
-      final response = await widget.apiService.requestPasswordReset(email: email);
-      final message =
-          (response['message'] as String?) ??
-          'If an account exists for this email, reset instructions have been sent.';
-      if (!mounted) return;
-      Navigator.of(context).pop(message);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _inlineError = 'Reset failed: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Reset Password'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _controller,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              hintText: 'you@example.com',
-            ),
-            keyboardType: TextInputType.emailAddress,
-            enabled: !_isSubmitting,
-          ),
-          if (_inlineError != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _inlineError!,
-              style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-            ),
-          ],
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _isSubmitting ? null : _submit,
-          child: _isSubmitting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Send'),
         ),
       ],
     );

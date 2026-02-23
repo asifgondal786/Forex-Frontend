@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../../services/api_service.dart';
 import '../../services/firebase_service.dart';
 import '../../core/models/user.dart' as app_user;
 import '../../core/widgets/app_background.dart';
@@ -18,7 +14,6 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final ApiService _apiService = ApiService();
   final FirebaseService _firebaseService = FirebaseService();
   final _titleController = TextEditingController();
   final _firstNameController = TextEditingController();
@@ -34,14 +29,9 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
-  bool _accountExistsHint = false;
-  static final RegExp _invisibleChars = RegExp(
-    r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
-  );
 
   @override
   void dispose() {
-    _apiService.dispose();
     _titleController.dispose();
     _firstNameController.dispose();
     _secondNameController.dispose();
@@ -55,10 +45,9 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   bool _validateInputs() {
-    final normalizedEmail = _normalizeEmail(_emailController.text);
     if (_firstNameController.text.isEmpty || 
         _secondNameController.text.isEmpty ||
-        normalizedEmail.isEmpty ||
+        _emailController.text.isEmpty ||
         _mobileController.text.isEmpty ||
         _addressController.text.isEmpty ||
         _passwordController.text.isEmpty ||
@@ -67,8 +56,8 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
     
-    if (!_isValidEmail(normalizedEmail)) {
-      setState(() => _errorMessage = 'Please enter a valid email address');
+    if (!_emailController.text.contains('@') || !_emailController.text.contains('.com')) {
+      setState(() => _errorMessage = 'Please enter a valid Gmail address');
       return false;
     }
     
@@ -97,18 +86,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _handleSignup() async {
     if (!_validateInputs()) return;
-    final normalizedEmail = _normalizeEmail(_emailController.text);
-    _emailController.text = normalizedEmail;
     
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _accountExistsHint = false;
     });
 
     try {
       final user = await _firebaseService.signUpWithEmail(
-        normalizedEmail,
+        _emailController.text.trim(),
         _passwordController.text,
       );
 
@@ -117,7 +103,7 @@ class _SignupScreenState extends State<SignupScreen> {
           final appUser = app_user.User(
             id: user.uid,
             name: '${_firstNameController.text.trim()} ${_secondNameController.text.trim()}',
-            email: normalizedEmail,
+            email: _emailController.text.trim(),
             createdAt: DateTime.now(),
             preferences: {
               'username': _usernameController.text.trim(),
@@ -127,50 +113,15 @@ class _SignupScreenState extends State<SignupScreen> {
             },
           );
           await _firebaseService.createUserDocument(appUser);
-          var verificationMessage =
-              'Account created! Verification email sent to ${user.email ?? normalizedEmail}.';
           try {
-            final response = await _apiService.requestEmailVerification(
-              email: normalizedEmail,
-            );
-            final backendMessage = (response['message'] as String?)?.trim();
-            if (backendMessage != null && backendMessage.isNotEmpty) {
-              verificationMessage = backendMessage;
-            }
-          } on firebase_auth.FirebaseAuthException catch (e) {
-            if (mounted) {
-              verificationMessage =
-                  'Account created, but verification email failed (${_friendlyVerificationError(e.code)}). Use Resend on Verify screen.';
-            }
-            debugPrint('Email verification failed (${e.code}): ${e.message}');
+            await user.sendEmailVerification();
           } catch (e) {
-            debugPrint('Backend verification email failed: $e');
-            final errorText = e.toString().toLowerCase();
-            if (mounted &&
-                (errorText.contains('429') || errorText.contains('too many'))) {
-              verificationMessage =
-                  'Account created. Verification is temporarily rate-limited; please wait a few minutes and retry from Verify screen.';
-            }
-            if (!(errorText.contains('429') || errorText.contains('too many'))) {
-              try {
-                await _sendVerificationEmail(user);
-              } on firebase_auth.FirebaseAuthException catch (fe) {
-                if (mounted) {
-                  verificationMessage =
-                      'Account created, but verification email failed (${_friendlyVerificationError(fe.code)}). Use Resend on Verify screen.';
-                }
-              } catch (_) {
-                if (mounted) {
-                  verificationMessage =
-                      'Account created, but verification email could not be sent. Use Resend on Verify screen.';
-                }
-              }
-            }
+            debugPrint('Email verification failed: $e');
           }
 
           debugPrint('Signup successful');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(verificationMessage)),
+            const SnackBar(content: Text('Account created! Verify your email.')),
           );
           Navigator.pushNamedAndRemoveUntil(
             context,
@@ -181,112 +132,14 @@ class _SignupScreenState extends State<SignupScreen> {
           setState(() => _errorMessage = 'Signup failed');
         }
       }
-    } on firebase_auth.FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      final code = e.code.toLowerCase().trim();
-      setState(() {
-        _accountExistsHint = code == 'email-already-in-use';
-        _errorMessage = _friendlySignupError(code);
-      });
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = 'Signup failed. Please try again.');
+        setState(() => _errorMessage = 'Signup failed: $e');
       }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-    }
-  }
-
-  bool _isValidEmail(String email) {
-    final pattern = RegExp(r'^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$');
-    return pattern.hasMatch(email);
-  }
-
-  Future<void> _sendVerificationEmail(firebase_auth.User user) async {
-    final continueUrl = _resolveEmailContinueUrl();
-    try {
-      await user.sendEmailVerification(
-        firebase_auth.ActionCodeSettings(
-          url: continueUrl,
-          handleCodeInApp: false,
-        ),
-      );
-    } on firebase_auth.FirebaseAuthException catch (e) {
-      final code = e.code.toLowerCase().trim();
-      if (code == 'invalid-continue-uri' ||
-          code == 'unauthorized-continue-uri' ||
-          code == 'missing-continue-uri') {
-        await user.sendEmailVerification();
-        return;
-      }
-      rethrow;
-    }
-  }
-
-  String _resolveEmailContinueUrl() {
-    final fromEnv = (dotenv.env['APP_WEB_URL'] ?? '').trim();
-    if (fromEnv.isNotEmpty) {
-      final normalized = _normalizeBaseUrl(fromEnv);
-      if (!normalized.startsWith('https://') && !kDebugMode) {
-        throw StateError('APP_WEB_URL must use HTTPS in production.');
-      }
-      final uri = Uri.parse(normalized);
-      return uri.replace(path: '/verify', query: null, fragment: null).toString();
-    }
-    throw StateError('APP_WEB_URL is not configured.');
-  }
-
-  String _normalizeBaseUrl(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return trimmed;
-    final normalized = trimmed.endsWith('/')
-        ? trimmed.substring(0, trimmed.length - 1)
-        : trimmed;
-    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
-      return normalized;
-    }
-    return 'https://$normalized';
-  }
-
-  String _normalizeEmail(String email) {
-    return email
-        .replaceAll(_invisibleChars, '')
-        .replaceAll(RegExp(r'\s+'), '')
-        .trim()
-        .toLowerCase();
-  }
-
-  String _friendlySignupError(String code) {
-    switch (code) {
-      case 'email-already-in-use':
-        return 'This email is already registered. Sign in or reset password.';
-      case 'invalid-email':
-        return 'This email format is invalid.';
-      case 'weak-password':
-        return 'Password is too weak. Use at least 8 characters.';
-      case 'operation-not-allowed':
-        return 'Email/password signup is disabled in Firebase config.';
-      case 'network-request-failed':
-        return 'Network issue detected. Check internet and try again.';
-      default:
-        return 'Signup failed ($code). Please try again.';
-    }
-  }
-
-  String _friendlyVerificationError(String code) {
-    switch (code.toLowerCase().trim()) {
-      case 'too-many-requests':
-        return 'too many requests';
-      case 'network-request-failed':
-        return 'network issue';
-      case 'invalid-email':
-        return 'invalid email';
-      case 'user-disabled':
-        return 'user disabled';
-      default:
-        return code;
     }
   }
 
@@ -402,31 +255,6 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ],
                               ),
                             ),
-                          if (_accountExistsHint) ...[
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: () => Navigator.pushReplacementNamed(
-                                  context,
-                                  AppRoutes.login,
-                                ),
-                                icon: const Icon(
-                                  Icons.login,
-                                  size: 16,
-                                  color: Color(0xFF93C5FD),
-                                ),
-                                label: const Text(
-                                  'Go to Sign In',
-                                  style: TextStyle(
-                                    color: Color(0xFF93C5FD),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
                           if (_errorMessage != null) const SizedBox(height: 20),
 
                           // Title Field (Optional)
