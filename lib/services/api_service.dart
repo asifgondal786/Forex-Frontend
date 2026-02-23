@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -27,6 +28,7 @@ class ApiService {
     defaultValue: '',
   );
   static const Duration _timeout = Duration(seconds: 10);
+  static const Duration _authTimeout = Duration(seconds: 45);
   // Use --dart-define=DEV_USER_ID=your-user-id for development
   static const String _devUserId = String.fromEnvironment(
     'DEV_USER_ID',
@@ -187,15 +189,35 @@ class ApiService {
       debugPrint('Response body: ${response.body}');
     }
 
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      if (response.body.isEmpty) return {};
-      return json.decode(utf8.decode(response.bodyBytes));
-    } else {
-      throw ApiException(
-        'API Error: ${response.statusCode} - ${response.reasonPhrase}',
-        response.statusCode,
-      );
+    dynamic decoded;
+    if (response.body.isNotEmpty) {
+      try {
+        decoded = json.decode(utf8.decode(response.bodyBytes));
+      } catch (_) {
+        decoded = null;
+      }
     }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (decoded == null) return {};
+      return decoded;
+    }
+
+    var message = 'API Error: ${response.statusCode} - ${response.reasonPhrase}';
+    if (decoded is Map<String, dynamic>) {
+      final detail = decoded['detail'] ?? decoded['message'] ?? decoded['error'];
+      if (detail is String && detail.trim().isNotEmpty) {
+        message = detail.trim();
+      } else if (detail != null) {
+        message = detail.toString();
+      }
+    } else if (response.body.isNotEmpty) {
+      final plain = utf8.decode(response.bodyBytes).trim();
+      if (plain.isNotEmpty) {
+        message = plain;
+      }
+    }
+    throw ApiException(message, response.statusCode);
   }
 
   // ========== USER ENDPOINTS ==========
@@ -215,8 +237,18 @@ class ApiService {
             headers: _baseHeaders,
             body: json.encode({'email': normalizedEmail}),
           )
-          .timeout(_timeout);
+          .timeout(_authTimeout);
       return _handleResponse(response);
+    } on ApiException {
+      rethrow;
+    } on TimeoutException {
+      // Keep reset UX resilient: backend may complete email delivery after client timeout.
+      return {
+        'success': true,
+        'message':
+            'If an account exists for this email, password reset instructions have been sent.',
+        'debug': {'result': 'client_timeout_optimistic'},
+      };
     } catch (e) {
       debugPrint('Error requesting password reset: $e');
       throw ApiException('Error requesting password reset: $e');
@@ -238,8 +270,10 @@ class ApiService {
             headers: _baseHeaders,
             body: json.encode({'email': normalizedEmail}),
           )
-          .timeout(_timeout);
+          .timeout(_authTimeout);
       return _handleResponse(response);
+    } on ApiException {
+      rethrow;
     } catch (e) {
       debugPrint('Error requesting verification email: $e');
       throw ApiException('Error requesting verification email: $e');

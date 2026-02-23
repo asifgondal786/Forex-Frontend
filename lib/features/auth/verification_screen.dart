@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../core/widgets/app_background.dart';
 import '../../services/api_service.dart';
@@ -144,6 +145,17 @@ class _VerificationScreenState extends State<VerificationScreen> {
       }
       return;
     } catch (e) {
+      final errorText = e.toString().toLowerCase();
+      if (errorText.contains('429') || errorText.contains('too many')) {
+        if (mounted) {
+          setState(
+            () => _errorMessage =
+                'Too many verification attempts. Please wait a few minutes and try again.',
+          );
+          _startEmailCooldown(120);
+        }
+        return;
+      }
       if (kDebugMode) {
         debugPrint('Backend verification email failed, falling back: $e');
       }
@@ -194,12 +206,27 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   String _resolveEmailContinueUrl() {
-    final base = Uri.base;
-    if ((base.scheme == 'http' || base.scheme == 'https') &&
-        base.host.trim().isNotEmpty) {
-      return base.origin;
+    final fromEnv = (dotenv.env['APP_WEB_URL'] ?? '').trim();
+    if (fromEnv.isNotEmpty) {
+      final normalized = _normalizeBaseUrl(fromEnv);
+      if (!normalized.startsWith('https://') && !kDebugMode) {
+        throw StateError('APP_WEB_URL must use HTTPS in production.');
+      }
+      return normalized;
     }
-    return 'https://forexcompanion-e5a28.firebaseapp.com';
+    throw StateError('APP_WEB_URL is not configured.');
+  }
+
+  String _normalizeBaseUrl(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return trimmed;
+    final normalized = trimmed.endsWith('/')
+        ? trimmed.substring(0, trimmed.length - 1)
+        : trimmed;
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+      return normalized;
+    }
+    return 'https://$normalized';
   }
 
   String _friendlyEmailError(String code) {
