@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../services/api_service.dart';
 import '../../services/firebase_service.dart';
 import '../../core/models/user.dart' as app_user;
@@ -143,17 +145,25 @@ class _SignupScreenState extends State<SignupScreen> {
             debugPrint('Email verification failed (${e.code}): ${e.message}');
           } catch (e) {
             debugPrint('Backend verification email failed: $e');
-            try {
-              await _sendVerificationEmail(user);
-            } on firebase_auth.FirebaseAuthException catch (fe) {
-              if (mounted) {
-                verificationMessage =
-                    'Account created, but verification email failed (${_friendlyVerificationError(fe.code)}). Use Resend on Verify screen.';
-              }
-            } catch (_) {
-              if (mounted) {
-                verificationMessage =
-                    'Account created, but verification email could not be sent. Use Resend on Verify screen.';
+            final errorText = e.toString().toLowerCase();
+            if (mounted &&
+                (errorText.contains('429') || errorText.contains('too many'))) {
+              verificationMessage =
+                  'Account created. Verification is temporarily rate-limited; please wait a few minutes and retry from Verify screen.';
+            }
+            if (!(errorText.contains('429') || errorText.contains('too many'))) {
+              try {
+                await _sendVerificationEmail(user);
+              } on firebase_auth.FirebaseAuthException catch (fe) {
+                if (mounted) {
+                  verificationMessage =
+                      'Account created, but verification email failed (${_friendlyVerificationError(fe.code)}). Use Resend on Verify screen.';
+                }
+              } catch (_) {
+                if (mounted) {
+                  verificationMessage =
+                      'Account created, but verification email could not be sent. Use Resend on Verify screen.';
+                }
               }
             }
           }
@@ -216,12 +226,28 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   String _resolveEmailContinueUrl() {
-    final base = Uri.base;
-    if ((base.scheme == 'http' || base.scheme == 'https') &&
-        base.host.trim().isNotEmpty) {
-      return base.origin;
+    final fromEnv = (dotenv.env['APP_WEB_URL'] ?? '').trim();
+    if (fromEnv.isNotEmpty) {
+      final normalized = _normalizeBaseUrl(fromEnv);
+      if (!normalized.startsWith('https://') && !kDebugMode) {
+        throw StateError('APP_WEB_URL must use HTTPS in production.');
+      }
+      final uri = Uri.parse(normalized);
+      return uri.replace(path: '/verify', query: null, fragment: null).toString();
     }
-    return 'https://forexcompanion-e5a28.firebaseapp.com';
+    throw StateError('APP_WEB_URL is not configured.');
+  }
+
+  String _normalizeBaseUrl(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return trimmed;
+    final normalized = trimmed.endsWith('/')
+        ? trimmed.substring(0, trimmed.length - 1)
+        : trimmed;
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+      return normalized;
+    }
+    return 'https://$normalized';
   }
 
   String _normalizeEmail(String email) {
