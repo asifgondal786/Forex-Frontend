@@ -4,9 +4,20 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
-  // Load API key from .env file
+  static const String _apiKeyDefine = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: '',
+  );
+
+  // Load API key from --dart-define first, then optional .env fallback.
   static String get _apiKey {
-    return dotenv.env['GEMINI_API_KEY'] ?? '';
+    final fromDefine = _apiKeyDefine.trim();
+    if (fromDefine.isNotEmpty) return fromDefine;
+    try {
+      return (dotenv.env['GEMINI_API_KEY'] ?? '').trim();
+    } catch (_) {
+      return '';
+    }
   }
 
   late final GenerativeModel? _model;
