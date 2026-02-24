@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../providers/task_provider.dart';
-import '../../../core/models/task.dart';
 import 'task_card.dart';
 import 'live_updates_panel.dart';
 import 'task_history_table.dart';
