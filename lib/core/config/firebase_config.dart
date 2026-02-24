@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FirebaseConfig {
   static const String _apiKeyDefine = String.fromEnvironment(
@@ -36,31 +35,16 @@ class FirebaseConfig {
     defaultValue: '',
   );
 
-  static String _env(String key) {
-    try {
-      return (dotenv.env[key] ?? '').trim();
-    } catch (_) {
-      return '';
-    }
-  }
+  static String _read(String defineValue) => defineValue.trim();
 
-  static String _read(String key, String defineValue) {
-    final fromDefine = defineValue.trim();
-    if (fromDefine.isNotEmpty) return fromDefine;
-    return _env(key);
-  }
-
-  static String get _apiKey => _read('FIREBASE_API_KEY', _apiKeyDefine);
-  static String get _appId => _read('FIREBASE_APP_ID', _appIdDefine);
-  static String get _messagingSenderId =>
-      _read('FIREBASE_MESSAGING_SENDER_ID', _messagingSenderIdDefine);
-  static String get _projectId => _read('FIREBASE_PROJECT_ID', _projectIdDefine);
-  static String get _authDomain => _read('FIREBASE_AUTH_DOMAIN', _authDomainDefine);
-  static String get _databaseUrl => _read('FIREBASE_DATABASE_URL', _databaseUrlDefine);
-  static String get _storageBucket =>
-      _read('FIREBASE_STORAGE_BUCKET', _storageBucketDefine);
-  static String get _measurementId =>
-      _read('FIREBASE_MEASUREMENT_ID', _measurementIdDefine);
+  static String get _apiKey => _read(_apiKeyDefine);
+  static String get _appId => _read(_appIdDefine);
+  static String get _messagingSenderId => _read(_messagingSenderIdDefine);
+  static String get _projectId => _read(_projectIdDefine);
+  static String get _authDomain => _read(_authDomainDefine);
+  static String get _databaseUrl => _read(_databaseUrlDefine);
+  static String get _storageBucket => _read(_storageBucketDefine);
+  static String get _measurementId => _read(_measurementIdDefine);
 
   static void validate() {
     final requiredKeys = <String, String>{
