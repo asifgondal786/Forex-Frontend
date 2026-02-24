@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forex_companion/config/theme.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/task_provider.dart';
 import '../../../core/models/task.dart';
@@ -69,7 +70,7 @@ class _CreateTaskDialogState extends State<CreateTaskDialog> {
               
               // Priority dropdown
               DropdownButtonFormField<TaskPriority>(
-                value: _priority,
+                initialValue: _priority,
                 decoration: const InputDecoration(
                   labelText: 'Priority',
                   border: OutlineInputBorder(),
@@ -100,8 +101,8 @@ class _CreateTaskDialogState extends State<CreateTaskDialog> {
           onPressed: _submitTask,
           icon: const Icon(Icons.rocket_launch),
           label: const Text('Start Task'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF10B981),
+          style: AppTheme.glassElevatedButtonStyle(
+            tintColor: const Color(0xFF10B981),
             foregroundColor: Colors.white,
           ),
         ),

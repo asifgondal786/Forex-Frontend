@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../core/widgets/app_background.dart';
+import '../../services/api_service.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -15,9 +18,9 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
+  final ApiService _apiService = ApiService();
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
-  final _auth = firebase_auth.FirebaseAuth.instance;
   firebase_auth.ConfirmationResult? _confirmationResult;
   Timer? _autoRefreshTimer;
   Timer? _emailCooldownTimer;
@@ -27,8 +30,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
   String? _verificationId;
   String? _errorMessage;
   String? _infoMessage;
+  static const bool _enablePhoneVerification = bool.fromEnvironment(
+    'ENABLE_PHONE_VERIFICATION',
+    defaultValue: false,
+  );
 
-  firebase_auth.User? get _user => _auth.currentUser;
+  firebase_auth.FirebaseAuth? get _auth {
+    try {
+      if (Firebase.apps.isEmpty) {
+        return null;
+      }
+      return firebase_auth.FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  firebase_auth.User? get _user => _auth?.currentUser;
 
   bool get _emailVerified => _user?.emailVerified ?? false;
   bool get _phoneVerified => (_user?.phoneNumber ?? '').isNotEmpty;
@@ -36,11 +54,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   void initState() {
     super.initState();
-    _startAutoRefresh();
+    if (_auth != null) {
+      _startAutoRefresh();
+    } else {
+      _errorMessage = 'Firebase authentication is unavailable in this build.';
+    }
   }
 
   @override
   void dispose() {
+    _apiService.dispose();
     _autoRefreshTimer?.cancel();
     _emailCooldownTimer?.cancel();
     _phoneController.dispose();
@@ -74,6 +97,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Future<void> _refreshUser({bool silent = false}) async {
+    if (_auth == null) {
+      if (!silent && mounted) {
+        setState(() {
+          _errorMessage = 'Firebase authentication is unavailable.';
+          _isRefreshing = false;
+        });
+      }
+      return;
+    }
+
     if (!silent) {
       setState(() {
         _isRefreshing = true;
@@ -101,16 +134,69 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (_isSendingEmail || _emailCooldown > 0) {
       return;
     }
+    final user = _user;
+    if (user == null || (user.email ?? '').isEmpty) {
+      setState(() {
+        _errorMessage = 'No signed-in email user found. Please sign in again.';
+        _infoMessage = null;
+      });
+      return;
+    }
+    if (user.emailVerified) {
+      setState(() {
+        _errorMessage = null;
+        _infoMessage = 'Email is already verified.';
+      });
+      return;
+    }
+
     setState(() {
       _isSendingEmail = true;
       _errorMessage = null;
       _infoMessage = null;
     });
     try {
-      await _user?.sendEmailVerification();
+      final backendResponse = await _apiService.requestEmailVerification(
+        email: user.email ?? '',
+      );
+      final backendMessage = (backendResponse['message'] as String?)?.trim();
       if (mounted) {
-        setState(() => _infoMessage = 'Verification email sent.');
+        setState(
+          () => _infoMessage = backendMessage?.isNotEmpty == true
+              ? backendMessage
+              : 'Verification email sent to ${user.email}.',
+        );
         _startEmailCooldown();
+      }
+      return;
+    } catch (e) {
+      final errorText = e.toString().toLowerCase();
+      if (errorText.contains('429') || errorText.contains('too many')) {
+        if (mounted) {
+          setState(
+            () => _errorMessage =
+                'Too many verification attempts. Please wait a few minutes and try again.',
+          );
+          _startEmailCooldown(120);
+        }
+        return;
+      }
+      if (kDebugMode) {
+        debugPrint('Backend verification email failed, falling back: $e');
+      }
+    }
+
+    try {
+      await _sendVerificationEmailWithFallback(user);
+      if (mounted) {
+        setState(() => _infoMessage = 'Verification email sent to ${user.email}.');
+        _startEmailCooldown();
+      }
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(
+          () => _errorMessage = 'Failed to send email: ${_friendlyEmailError(e.code)}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -120,6 +206,74 @@ class _VerificationScreenState extends State<VerificationScreen> {
       if (mounted) {
         setState(() => _isSendingEmail = false);
       }
+    }
+  }
+
+  Future<void> _sendVerificationEmailWithFallback(firebase_auth.User user) async {
+    final continueUrl = _resolveEmailContinueUrl();
+    try {
+      await user.sendEmailVerification(
+        firebase_auth.ActionCodeSettings(
+          url: continueUrl,
+          handleCodeInApp: false,
+        ),
+      );
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      final code = e.code.toLowerCase().trim();
+      if (code == 'invalid-continue-uri' ||
+          code == 'unauthorized-continue-uri' ||
+          code == 'missing-continue-uri') {
+        await user.sendEmailVerification();
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  String _resolveEmailContinueUrl() {
+    const fromDefine =
+        String.fromEnvironment('APP_WEB_URL', defaultValue: '');
+    String fromEnv = '';
+    try {
+      fromEnv = (dotenv.env['APP_WEB_URL'] ?? '').trim();
+    } catch (_) {}
+    final raw = fromDefine.trim().isNotEmpty ? fromDefine.trim() : fromEnv;
+    if (raw.isNotEmpty) {
+      final normalized = _normalizeBaseUrl(raw);
+      if (!normalized.startsWith('https://') && !kDebugMode) {
+        throw StateError('APP_WEB_URL must use HTTPS in production.');
+      }
+      return normalized;
+    }
+    throw StateError('APP_WEB_URL is not configured.');
+  }
+
+  String _normalizeBaseUrl(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return trimmed;
+    final normalized = trimmed.endsWith('/')
+        ? trimmed.substring(0, trimmed.length - 1)
+        : trimmed;
+    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+      return normalized;
+    }
+    return 'https://$normalized';
+  }
+
+  String _friendlyEmailError(String code) {
+    switch (code.toLowerCase().trim()) {
+      case 'too-many-requests':
+        return 'too many requests. Please wait before retrying.';
+      case 'network-request-failed':
+        return 'network issue. Check internet and retry.';
+      case 'invalid-email':
+        return 'invalid email address.';
+      case 'unauthorized-continue-uri':
+      case 'invalid-continue-uri':
+      case 'missing-continue-uri':
+        return 'email action link configuration issue.';
+      default:
+        return code;
     }
   }
 
@@ -173,7 +327,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     );
                   }
                 } else {
-                  await firebase_auth.FirebaseAuth.instance.verifyPhoneNumber(
+                  final auth = _auth;
+                  if (auth == null) {
+                    safeSetModal(
+                      () => dialogError = 'Firebase authentication is unavailable.',
+                    );
+                    return;
+                  }
+                  await auth.verifyPhoneNumber(
                     phoneNumber: phone,
                     verificationCompleted: (credential) async {
                       try {
@@ -205,6 +366,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     codeAutoRetrievalTimeout: (verificationId) {
                       safeSetModal(() => _verificationId = verificationId);
                     },
+                  );
+                }
+              } on firebase_auth.FirebaseAuthException catch (e) {
+                final code = e.code.toLowerCase().trim();
+                if (code == 'operation-not-allowed') {
+                  safeSetModal(
+                    () => dialogError =
+                        'Phone provider is disabled in Firebase. Enable Phone in Authentication > Sign-in method.',
+                  );
+                } else {
+                  safeSetModal(
+                    () => dialogError = 'Phone verification error: ${e.message ?? code}',
                   );
                 }
               } catch (e) {
@@ -340,8 +513,6 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     final userEmail = _user?.email ?? '';
-    final emailButtonLabel =
-        _emailCooldown > 0 ? 'Resend in ${_emailCooldown}s' : 'Send Verification Email';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -376,7 +547,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Complete email and phone verification to continue.',
+                          _enablePhoneVerification
+                              ? 'Complete email and phone verification to continue.'
+                              : 'Complete email verification to continue.',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[500],
@@ -396,20 +569,26 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ),
                         const SizedBox(height: 12),
                         if (!_emailVerified) ...[
-                          Row(
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
                             children: [
                               ElevatedButton(
-                                onPressed:
-                                    (_emailCooldown > 0 || _isSendingEmail) ? null : _sendEmailVerification,
+                                onPressed: (_emailCooldown > 0 || _isSendingEmail)
+                                    ? null
+                                    : _sendEmailVerification,
                                 child: _isSendingEmail
                                     ? const SizedBox(
                                         width: 16,
                                         height: 16,
                                         child: CircularProgressIndicator(strokeWidth: 2),
                                       )
-                                    : Text(emailButtonLabel),
+                                    : Text(
+                                        _emailCooldown > 0
+                                            ? 'Resend ${_emailCooldown}s'
+                                            : 'Send Verification',
+                                      ),
                               ),
-                              const SizedBox(width: 12),
                               OutlinedButton(
                                 onPressed: _isRefreshing ? null : _refreshUser,
                                 child: _isRefreshing
@@ -430,29 +609,35 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           const SizedBox(height: 20),
                         ],
 
-                        _buildStatusRow(
-                          title: 'Phone',
-                          subtitle: _phoneVerified
-                              ? (_user?.phoneNumber ?? '')
-                              : 'Not verified',
-                          isVerified: _phoneVerified,
-                        ),
-                        const SizedBox(height: 12),
-
-                        if (!_phoneVerified) ...[
-                          SizedBox(
-                            width: isMobile ? double.infinity : 220,
-                            child: ElevatedButton.icon(
-                              onPressed: _showPhoneVerificationDialog,
-                              icon: const Icon(Icons.sms),
-                              label: const Text('Verify Phone'),
-                            ),
+                        if (_enablePhoneVerification) ...[
+                          _buildStatusRow(
+                            title: 'Phone',
+                            subtitle: _phoneVerified
+                                ? (_user?.phoneNumber ?? '')
+                                : 'Not verified',
+                            isVerified: _phoneVerified,
                           ),
                           const SizedBox(height: 12),
+                          if (!_phoneVerified) ...[
+                            SizedBox(
+                              width: isMobile ? double.infinity : 220,
+                              child: ElevatedButton.icon(
+                                onPressed: _showPhoneVerificationDialog,
+                                icon: const Icon(Icons.sms),
+                                label: const Text('Verify Phone'),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              kIsWeb
+                                  ? 'You will complete a reCAPTCHA before receiving the SMS.'
+                                  : 'We will send an SMS code to verify your number.',
+                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                            ),
+                          ],
+                        ] else ...[
                           Text(
-                            kIsWeb
-                                ? 'You will complete a reCAPTCHA before receiving the SMS.'
-                                : 'We will send an SMS code to verify your number.',
+                            'Phone verification is currently disabled for this project.',
                             style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                           ),
                         ],

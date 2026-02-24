@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -27,12 +28,64 @@ const bool useFirestoreTasks = false;
 
 // Set to true for UI development without a backend. Overrides task/API usage.
 const bool useMockData = false;
+const String _appWebUrlFromDefine = String.fromEnvironment(
+  'APP_WEB_URL',
+  defaultValue: '',
+);
+
+String _normalizeBaseUrl(String value) {
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) return trimmed;
+  final withScheme = (trimmed.startsWith('http://') || trimmed.startsWith('https://'))
+      ? trimmed
+      : 'https://$trimmed';
+  return withScheme.endsWith('/')
+      ? withScheme.substring(0, withScheme.length - 1)
+      : withScheme;
+}
+
+void _validateUrlConfigOnBoot() {
+  if (kDebugMode) return;
+
+  final apiFromDefine = const String.fromEnvironment('API_BASE_URL', defaultValue: '').trim();
+  String apiFromEnv = '';
+  try {
+    apiFromEnv = (dotenv.env['API_BASE_URL'] ?? '').trim();
+  } catch (_) {}
+  final apiBaseUrl = _normalizeBaseUrl(apiFromDefine.isNotEmpty ? apiFromDefine : apiFromEnv);
+  if (apiBaseUrl.isEmpty || !apiBaseUrl.startsWith('https://')) {
+    throw StateError('API_BASE_URL must be configured with HTTPS in production.');
+  }
+
+  final appFromDefine = _appWebUrlFromDefine.trim();
+  String appFromEnv = '';
+  try {
+    appFromEnv = (dotenv.env['APP_WEB_URL'] ?? '').trim();
+  } catch (_) {}
+  final appWebUrl = _normalizeBaseUrl(appFromDefine.isNotEmpty ? appFromDefine : appFromEnv);
+  if (appWebUrl.isEmpty || !appWebUrl.startsWith('https://')) {
+    throw StateError('APP_WEB_URL must be configured with HTTPS in production.');
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables from .env file
-  await dotenv.load(fileName: ".env");
+  // .env is optional in deployed builds; prefer --dart-define in production.
+  if (!kIsWeb) {
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (_) {
+      if (kDebugMode) {
+        debugPrint('.env not found; relying on --dart-define/environment defaults.');
+      }
+    }
+  } else if (kDebugMode) {
+    debugPrint(
+      'Web build: skipping .env asset load; relying on --dart-define/environment defaults.',
+    );
+  }
+  _validateUrlConfigOnBoot();
 
   // Initialize Firebase if enabled
   bool firebaseReady = false;
