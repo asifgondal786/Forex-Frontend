@@ -1,13 +1,10 @@
 {
-  "installCommand": "git clone https://github.com/flutter/flutter.git --depth 1 -b stable .flutter-sdk && ./.flutter-sdk/bin/flutter config --enable-web && ./.flutter-sdk/bin/flutter pub get",
-  
-  "buildCommand": "git clone https://github.com/flutter/flutter.git -b stable --depth 1 && export PATH=\"$PATH:`pwd`/flutter/bin\" && flutter pub get && flutter build web --release --dart-define=API_BASE_URL=$API_BASE_URL --dart-define=GEMINI_API_KEY=$GEMINI_API_KEY --dart-define=APP_WEB_URL=$APP_WEB_URL",
-"outputDirectory": "build/web",
-"cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+  "version": 2,
+  "builds": [
+    { "src": "build/web/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/build/web/index.html" }
   ]
 }
