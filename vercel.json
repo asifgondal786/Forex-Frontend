@@ -1,10 +1,38 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "build/web/**", "use": "@vercel/static" }
-  ],
+  "buildCommand": "echo 'Flutter web build already compiled'",
+  "outputDirectory": "build/web",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://forex-backend-production-73e7.up.railway.app",
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAGPIvZvdbyrXwRJonYmSZvUHhGEmapec8",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "forexcompanion-e5a28"
+  },
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/build/web/index.html" }
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/.*",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
+    }
   ]
 }
