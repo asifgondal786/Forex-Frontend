@@ -1,12 +1,12 @@
 // lib/services/gemini_service.dart
 //
 // SECURITY FIX: Gemini API key removed from Flutter client.
-// All AI requests now proxy through the FastAPI backend.
-// The key lives in Railway environment variables only.
+// All AI requests proxy through FastAPI backend with Firebase Auth.
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class GeminiService {
   static const String _backendBaseUrl =
@@ -16,6 +16,18 @@ class GeminiService {
   static final GeminiService _instance = GeminiService._internal();
   factory GeminiService() => _instance;
   GeminiService._internal();
+
+  // Get current Firebase ID token (auto-refreshes if expired)
+  Future<String?> _getIdToken() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+      return await user.getIdToken();
+    } catch (e) {
+      debugPrint('GeminiService: failed to get ID token: $e');
+      return null;
+    }
+  }
 
   Future<String> sendMessage(String userMessage) async {
     return _chat(messages: [
@@ -74,6 +86,13 @@ Provide clear, numbered steps with realistic timeframes.
     String model = 'gemini-2.0-flash',
   }) async {
     try {
+      final idToken = await _getIdToken();
+      if (idToken == null) {
+        throw GeminiServiceException(
+          'You must be signed in to use AI features.',
+        );
+      }
+
       final body = jsonEncode({
         'messages': messages,
         if (systemPrompt != null) 'system_prompt': systemPrompt,
@@ -83,16 +102,23 @@ Provide clear, numbered steps with realistic timeframes.
       final response = await http
           .post(
             Uri.parse(_chatEndpoint),
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $idToken',
+            },
             body: body,
           )
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        // Handle both direct response and wrapped envelope {"data": {"content": ...}}
+        // Handle API envelope: {"data": {"content": "..."}, "status": "success"}
         final inner = data['data'] ?? data;
         return (inner as Map<String, dynamic>)['content'] as String? ?? '';
+      } else if (response.statusCode == 401) {
+        throw GeminiServiceException(
+          'Session expired. Please sign in again.',
+        );
       } else if (response.statusCode == 503) {
         throw GeminiServiceException(
           'AI service is temporarily unavailable. Please try again later.',
