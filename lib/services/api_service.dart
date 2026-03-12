@@ -1163,6 +1163,25 @@ class ApiService {
     }
   }
 
+  // ========== SECURITY & COMPLIANCE ==========
+
+  Future<Map<String, dynamic>> getSecurityDashboard() async {
+    try {
+      final headers = await _buildHeaders();
+      final userId = await _resolveUserId(headers: headers);
+      final response = await _client
+          .get(
+            Uri.parse('$baseUrl/api/advanced/security/dashboard/$userId'),
+            headers: headers,
+          )
+          .timeout(_timeout);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('Error fetching security dashboard: $e');
+      throw ApiException('Error fetching security dashboard: $e');
+    }
+  }
+
   Future<Map<String, dynamic>> getAutonomyGuardrails() async {
     try {
       final headers = await _buildHeaders();
@@ -1184,6 +1203,7 @@ class ApiService {
     String? level,
     Map<String, dynamic>? probation,
     Map<String, dynamic>? riskBudget,
+    String? profile,
   }) async {
     try {
       final headers = await _buildHeaders();
@@ -1193,6 +1213,9 @@ class ApiService {
       };
       if (level != null && level.trim().isNotEmpty) {
         body['level'] = level.trim().toLowerCase();
+      }
+      if (profile != null && profile.trim().isNotEmpty) {
+        body['profile'] = profile.trim().toLowerCase();
       }
       if (probation != null) body['probation'] = probation;
       if (riskBudget != null) body['risk_budget'] = riskBudget;
