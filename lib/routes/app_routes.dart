@@ -13,6 +13,7 @@ import '../features/ai_chat/ai_chat_screen.dart';
 import '../features/task_creation/task_creation_screen.dart';
 import '../features/task_history/task_history_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/settings/security_center_screen.dart';
 import '../features/admin/user_admin_dashboard_screen.dart';
 
 class AppRoutes {
@@ -43,8 +44,7 @@ class AppRoutes {
     settings: (_) => const _ProtectedRoute(child: SettingsScreen()),
     profile: (_) => const _ProtectedRoute(child: UserAdminDashboardScreen()),
     '/onboarding': (_) => const OnboardingScreen(),
-    security: (_) =>
-        const _ProtectedRoute(child: PlaceholderScreen(title: 'Security')),
+    security: (_) => const _ProtectedRoute(child: SecurityCenterScreen()),
     help: (_) => const _ProtectedRoute(
         child: PlaceholderScreen(title: 'Help & Support')),
   };
