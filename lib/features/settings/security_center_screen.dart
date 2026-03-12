@@ -196,9 +196,9 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
+          color: Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +208,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.16),
+                    color: statusColor.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: statusColor, size: 20),
@@ -231,7 +231,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.14),
+                color: statusColor.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
@@ -367,9 +367,9 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
