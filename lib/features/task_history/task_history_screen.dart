@@ -99,9 +99,9 @@ class _TaskHistoryScreenState extends State<TaskHistoryScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.06),
+                          color: Colors.white.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white.withOpacity(0.12)),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
                         ),
                         child: Wrap(
                           spacing: 8,
@@ -149,10 +149,10 @@ class _TaskHistoryScreenState extends State<TaskHistoryScreen> {
                         Container(
                           padding: const EdgeInsets.all(48),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.06),
+                            color: Colors.white.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(16),
                             border:
-                                Border.all(color: Colors.white.withOpacity(0.1)),
+                                Border.all(color: Colors.white.withValues(alpha: 0.1)),
                           ),
                           child: Center(
                             child: Column(
@@ -160,7 +160,7 @@ class _TaskHistoryScreenState extends State<TaskHistoryScreen> {
                                 Icon(
                                   Icons.inbox_outlined,
                                   size: 64,
-                                  color: Colors.white.withOpacity(0.4),
+                                  color: Colors.white.withValues(alpha: 0.4),
                                 ),
                                 const SizedBox(height: 16),
                                 const Text(
@@ -176,7 +176,7 @@ class _TaskHistoryScreenState extends State<TaskHistoryScreen> {
                                   'Create your first task to get started',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white.withOpacity(0.6),
+                                    color: Colors.white.withValues(alpha: 0.6),
                                   ),
                                 ),
                               ],
@@ -224,11 +224,11 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? chipColor.withOpacity(0.25)
-              : Colors.white.withOpacity(0.06),
+              ? chipColor.withValues(alpha: 0.25)
+              : Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? chipColor : Colors.white.withOpacity(0.2),
+            color: isSelected ? chipColor : Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: Text(
@@ -256,12 +256,12 @@ class _TaskHistoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -329,7 +329,7 @@ class _TaskHistoryCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: task.progress,
                 minHeight: 8,
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
                 valueColor: const AlwaysStoppedAnimation<Color>(
                   AppColors.primaryGreen,
                 ),
@@ -342,9 +342,9 @@ class _TaskHistoryCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white.withOpacity(0.12)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               ),
               child: Row(
                 children: [

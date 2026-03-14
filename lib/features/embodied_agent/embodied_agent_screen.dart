@@ -577,7 +577,7 @@ class _EmbodiedAgentScreenState extends State<EmbodiedAgentScreen> {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   key: ValueKey<String>(agent.riskProfile),
-                  value: agent.riskProfile,
+                  initialValue: agent.riskProfile,
                   isExpanded: true,
                   iconEnabledColor: Colors.white70,
                   decoration: _inputDecoration('Risk profile'),
