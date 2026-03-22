@@ -9,19 +9,17 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
   web.SpeechRecognition? _activeRecognition;
   Completer<String?>? _recognitionCompleter;
   Timer? _recognitionTimeoutTimer;
-  StreamSubscription<web.SpeechRecognitionEvent>? _recognitionResultSub;
-  StreamSubscription<web.SpeechRecognitionErrorEvent>? _recognitionErrorSub;
-  StreamSubscription<web.Event>? _recognitionEndSub;
+  JSFunction? _onResultJs;
+  JSFunction? _onErrorJs;
+  JSFunction? _onEndJs;
   bool _isListening = false;
 
   @override
-  bool get supported => web.window.speechSynthesis != null;
+  bool get supported => true;
 
   @override
   bool get supportsSpeechRecognition {
     try {
-      // package:web exposes the constructor directly; if it throws the
-      // browser does not support the API.
       web.SpeechRecognition();
       return true;
     } catch (_) {
@@ -43,7 +41,6 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
     if (payload.isEmpty) return;
 
     final synth = web.window.speechSynthesis;
-
     _resumeSynth(synth);
 
     try {
@@ -62,10 +59,9 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
         final voices = await _readVoicesWithWarmup(synth);
         final selectedVoice = _selectBestVoice(voices, locale);
         final retryLocale =
-            selectedVoice?.lang.trim().isNotEmpty == true
+            (selectedVoice?.lang ?? '').trim().isNotEmpty
                 ? selectedVoice!.lang.trim()
                 : locale;
-
         started = await _speakAttempt(
           synth: synth,
           payload: payload,
@@ -100,28 +96,19 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
   void _resumeSynth(web.SpeechSynthesis synth) {
     try {
       synth.resume();
-    } catch (_) {
-      // Best-effort.
-    }
+    } catch (_) {}
   }
 
-  // Convert JSArray<SpeechSynthesisVoice> → Dart List
   List<web.SpeechSynthesisVoice> _voiceList(
     JSArray<web.SpeechSynthesisVoice> jsVoices,
-  ) {
-    final list = <web.SpeechSynthesisVoice>[];
-    for (var i = 0; i < jsVoices.length; i++) {
-      list.add(jsVoices.item(i)!);
-    }
-    return list;
-  }
+  ) =>
+      jsVoices.toDart;
 
   Future<List<web.SpeechSynthesisVoice>> _readVoicesWithWarmup(
     web.SpeechSynthesis synth,
   ) async {
     var voices = _voiceList(synth.getVoices());
     if (voices.isNotEmpty) return voices;
-
     for (int i = 0; i < 8; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 150));
       _resumeSynth(synth);
@@ -144,10 +131,7 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
     utterance.volume = 1.0;
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
-
-    if (selectedVoice != null) {
-      utterance.voice = selectedVoice;
-    }
+    if (selectedVoice != null) utterance.voice = selectedVoice;
 
     final done = Completer<void>();
     final fallback = Timer(
@@ -170,15 +154,18 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
       if (!done.isCompleted) done.complete();
     }
 
-    utterance.addEventListener('start', onStart.toJS);
-    utterance.addEventListener('end', onEnd.toJS);
-    utterance.addEventListener('error', onError.toJS);
+    final onStartJs = onStart.toJS;
+    final onEndJs = onEnd.toJS;
+    final onErrorJs = onError.toJS;
+
+    utterance.addEventListener('start', onStartJs);
+    utterance.addEventListener('end', onEndJs);
+    utterance.addEventListener('error', onErrorJs);
 
     if (synth.pending || synth.speaking) {
       synth.cancel();
       _resumeSynth(synth);
     }
-
     synth.speak(utterance);
 
     try {
@@ -186,9 +173,9 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
     } finally {
       fallback.cancel();
       speakingProbe.cancel();
-      utterance.removeEventListener('start', onStart.toJS);
-      utterance.removeEventListener('end', onEnd.toJS);
-      utterance.removeEventListener('error', onError.toJS);
+      utterance.removeEventListener('start', onStartJs);
+      utterance.removeEventListener('end', onEndJs);
+      utterance.removeEventListener('error', onErrorJs);
     }
 
     return started;
@@ -199,30 +186,29 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
     String locale,
   ) {
     if (voices.isEmpty) return null;
-
     final normalizedLocale = locale.toLowerCase();
     final languageCode = normalizedLocale.split('-').first;
 
     for (final voice in voices) {
-      final lang = voice.lang.toLowerCase();
-      if (lang == normalizedLocale && voice.localService) return voice;
+      if (voice.lang.toLowerCase() == normalizedLocale && voice.localService) {
+        return voice;
+      }
     }
     for (final voice in voices) {
-      final lang = voice.lang.toLowerCase();
-      if (lang == normalizedLocale) return voice;
+      if (voice.lang.toLowerCase() == normalizedLocale) return voice;
     }
     for (final voice in voices) {
-      final lang = voice.lang.toLowerCase();
-      if (lang.startsWith(languageCode) && voice.localService) return voice;
+      if (voice.lang.toLowerCase().startsWith(languageCode) &&
+          voice.localService) {
+        return voice;
+      }
     }
     for (final voice in voices) {
-      final lang = voice.lang.toLowerCase();
-      if (lang.startsWith(languageCode)) return voice;
+      if (voice.lang.toLowerCase().startsWith(languageCode)) return voice;
     }
     for (final voice in voices) {
       if (voice.default_) return voice;
     }
-
     return voices.first;
   }
 
@@ -255,8 +241,9 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
       _stopRecognitionInternal();
     }
 
-    _recognitionResultSub = recognition.onresult.listen((event) {
-      final results = event.results;
+    void onResult(web.Event event) {
+      final e = event as web.SpeechRecognitionEvent;
+      final results = e.results;
       if (results.length == 0) {
         completeAndCleanup(null);
         return;
@@ -268,15 +255,21 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
       }
       final transcript = firstResult.item(0)!.transcript.trim();
       completeAndCleanup(transcript.isNotEmpty ? transcript : null);
-    });
+    }
 
-    _recognitionErrorSub = recognition.onspeechrecognitionerror.listen((_) {
-      completeAndCleanup(null);
-    });
+    void onError(web.Event _) => completeAndCleanup(null);
 
-    _recognitionEndSub = recognition.onend.listen((_) {
+    void onEnd(web.Event _) {
       if (!completer.isCompleted) completeAndCleanup(null);
-    });
+    }
+
+    _onResultJs = onResult.toJS;
+    _onErrorJs = onError.toJS;
+    _onEndJs = onEnd.toJS;
+
+    recognition.addEventListener('result', _onResultJs);
+    recognition.addEventListener('error', _onErrorJs);
+    recognition.addEventListener('end', _onEndJs);
 
     _recognitionTimeoutTimer = Timer(timeout, () {
       completeAndCleanup(null);
@@ -294,13 +287,14 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
 
   Future<void> _ensureMicPermission() async {
     try {
-      final mediaDevices = web.window.navigator.mediaDevices;
       final constraints = web.MediaStreamConstraints(audio: true.toJS);
-      final stream = await mediaDevices.getUserMedia(constraints).toDart;
-      final tracks = stream.getTracks();
-      for (var i = 0; i < tracks.length; i++) {
+      final stream = await web.window.navigator.mediaDevices
+          .getUserMedia(constraints)
+          .toDart;
+      final tracks = stream.getTracks().toDart;
+      for (final track in tracks) {
         try {
-          tracks.item(i)!.stop();
+          track.stop();
         } catch (_) {}
       }
     } catch (_) {
@@ -325,23 +319,23 @@ class _WebVoiceAssistantService implements VoiceAssistantService {
     final recognition = _activeRecognition;
     if (recognition != null) {
       try {
+        if (_onResultJs != null) {
+          recognition.removeEventListener('result', _onResultJs!);
+        }
+        if (_onErrorJs != null) {
+          recognition.removeEventListener('error', _onErrorJs!);
+        }
+        if (_onEndJs != null) {
+          recognition.removeEventListener('end', _onEndJs!);
+        }
         recognition.stop();
       } catch (_) {}
     }
     _activeRecognition = null;
+    _onResultJs = null;
+    _onErrorJs = null;
+    _onEndJs = null;
     _isListening = false;
-
-    final resultSub = _recognitionResultSub;
-    _recognitionResultSub = null;
-    if (resultSub != null) unawaited(resultSub.cancel());
-
-    final errorSub = _recognitionErrorSub;
-    _recognitionErrorSub = null;
-    if (errorSub != null) unawaited(errorSub.cancel());
-
-    final endSub = _recognitionEndSub;
-    _recognitionEndSub = null;
-    if (endSub != null) unawaited(endSub.cancel());
 
     final completer = _recognitionCompleter;
     if (completer != null && !completer.isCompleted) {

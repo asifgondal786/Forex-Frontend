@@ -22,6 +22,8 @@ import 'providers/market_watch_provider.dart';
 import 'providers/trade_signals_provider.dart';
 import 'providers/chart_provider.dart';
 import 'providers/news_events_provider.dart';
+import 'providers/risk_provider.dart';
+import 'providers/paper_trading_provider.dart';
 import 'core/utils/runtime_url_resolver.dart';
 import 'helpers/mock_data_helper.dart';
 
@@ -99,7 +101,7 @@ class ForexCompanionApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        // ── Services ─────────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Services Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         Provider<ApiService>.value(value: apiService),
         if (firebaseService != null)
           Provider<FirebaseService>.value(value: firebaseService),
@@ -108,25 +110,27 @@ class ForexCompanionApp extends StatelessWidget {
           dispose: (_, service) => service.dispose(),
         ),
 
-        // ── Core providers ────────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Core providers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         ChangeNotifierProvider(create: (_) => ModeProvider()..load()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
 
-        // ── Quick actions (loads persisted dismiss state on boot) ──────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Quick actions (loads persisted dismiss state on boot) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         ChangeNotifierProvider(
           create: (_) => QuickActionsProvider()..load(),
         ),
 
-        // ── Custom setup preferences ──────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Custom setup preferences Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         ChangeNotifierProvider(create: (_) => CustomSetupProvider()),
 
-        // ── Mode-specific live data providers ─────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Mode-specific live data providers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         ChangeNotifierProvider(create: (_) => MarketWatchProvider()..init()),
         ChangeNotifierProvider(create: (ctx) => ChartProvider(ctx.read<ApiService>())),
         ChangeNotifierProvider(create: (ctx) => TradeSignalsProvider(ctx.read<ApiService>())),
         ChangeNotifierProvider(create: (ctx) => NewsEventsProvider(ctx.read<ApiService>())),
+        ChangeNotifierProvider(create: (ctx) => RiskProvider(ctx.read<ApiService>())),
+        ChangeNotifierProvider(create: (ctx) => PaperTradingProvider(ctx.read<ApiService>())),
 
-        // ── Feature providers ─────────────────────────────────────────
+        // Ã¢â€â‚¬Ã¢â€â‚¬ Feature providers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
         ChangeNotifierProvider(
           create: (_) {
             final provider = TaskProvider(
