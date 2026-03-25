@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -23,7 +23,7 @@ class ApiException implements Exception {
 class ApiService {
   // Backend URL - matches your backend port
   // Use --dart-define=API_BASE_URL=http://your.server:port for production.
-  /// API version prefix ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â all versioned endpoints use this path segment.
+  /// API version prefix ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â all versioned endpoints use this path segment.
   static const String apiV1 = '/api/v1';
 
   static const String _baseUrlFromDefine = String.fromEnvironment(
@@ -124,12 +124,12 @@ class ApiService {
     final filtered = <String, T>{};
     for (final pair in pairs) {
       if (rates.containsKey(pair)) {
-        filtered[pair] = rates[pair]!;        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Â added !
+        filtered[pair] = rates[pair]!;        // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â added !
         continue;
       }
       final compact = pair.replaceAll('/', '');
       if (rates.containsKey(compact)) {
-        filtered[compact] = rates[compact]!;  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Ãƒâ€šÃ‚Â added !
+        filtered[compact] = rates[compact]!;  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â added !
       }
     }
     return filtered.isNotEmpty ? filtered : rates;
@@ -960,7 +960,8 @@ class ApiService {
     try {
       final pairsParam = pairs.join(',');
       final uri = Uri.parse('$baseUrl$apiV1/signals/generate?pairs=$pairsParam');
-      final response = await _client.post(uri).timeout(_timeout);
+      final headers = await _buildHeaders();
+      final response = await _client.post(uri, headers: headers).timeout(_timeout);
       final data = _handleResponse(response);
       final signals = data['signals'] as List? ?? [];
       return signals.cast<Map<String, dynamic>>();
@@ -1733,4 +1734,6 @@ class ApiService {
     _client.close();
   }
 }
+
+
 
