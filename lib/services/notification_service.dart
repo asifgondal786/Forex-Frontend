@@ -1,8 +1,8 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'api_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
@@ -14,6 +14,10 @@ class NotificationService {
   final ApiService _api;
 
   NotificationService(this._api);
+  static const String _baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://forex-backend-production-bc44.up.railway.app',
+  );
 
   Future<void> initialize() async {
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
@@ -41,7 +45,8 @@ class NotificationService {
     if (initial != null) _handleTap(initial);
   }
 
-  Future<void> _registerToken(String token) async {
+  
+Future<void> _registerToken(String token) async {
     try {
       final platform = kIsWeb
           ? 'web'
@@ -51,13 +56,19 @@ class NotificationService {
 
       final authHeaders = await _api.authHeaders();
       final uri = Uri.parse(
-          '${_api.baseUrl}/api/v1/notifications/device/register');
+          '${_api.instanceBaseUrl}/api/v1/notifications/device/register');  // ✅ new line
+
+
+      final user = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final idToken = await user.getIdToken();
+        headers['Authorization'] = 'Bearer $idToken';
+      }
+
+      final uri = Uri.parse('${_api.instanceBaseUrl}/api/v1/notifications/device/register');
       final response = await http.post(
         uri,
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders,
-        },
+        headers: headers,
         body: jsonEncode({'fcm_token': token, 'platform': platform}),
       );
       debugPrint('[FCM] Register response: ${response.statusCode}');

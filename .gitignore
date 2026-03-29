@@ -52,3 +52,9 @@ venv/
 .dart_tool/
 
 dlq_*.json
+
+lib/core/config/firebase_config.dart
+
+web/firebase-config.js
+
+web/firebase-config.js

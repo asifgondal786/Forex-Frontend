@@ -1419,5 +1419,9 @@ class ApiService {
     }
   }
 
+// Public instance accessors for external services (e.g. NotificationService)
+  Future<Map<String, String>> authHeaders() => _buildHeaders();
+  String get instanceBaseUrl => ApiService.baseUrl;
+
   void dispose() => _client.close();
 }
