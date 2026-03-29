@@ -18,12 +18,12 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-cclass ApiService {
+class ApiService {
   // /api/v1 — public market data, signals, risk, paper trading
   static const String apiV1  = '/api/v1';
   // /v1/api — authenticated endpoints (tasks, accounts, forex, advanced)
   static const String apiV1b = '/v1/api';
-}
+
 
   static const String _baseUrlFromDefine = String.fromEnvironment(
     'API_BASE_URL',
