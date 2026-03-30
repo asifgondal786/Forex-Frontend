@@ -56,6 +56,7 @@ class AppRoutes {
     security: (_) => const _ProtectedRoute(child: SecurityCenterScreen()),
     charts: (_) => const _ProtectedRoute(child: ChartScreen()),
     risk: (_) => const _ProtectedRoute(child: RiskSimulatorScreen()),
+    '/chart': (context) => const ChartScreen(),
     paperTrading: (_) => const _ProtectedRoute(child: PaperTradingScreen()),
     help: (_) => const _ProtectedRoute(
         child: PlaceholderScreen(title: 'Help & Support')),

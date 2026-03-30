@@ -24,6 +24,9 @@ class ApiService {
   // /v1/api — authenticated endpoints (tasks, accounts, forex, advanced)
   static const String apiV1b = '/v1/api';
 
+  // added new cosntant here
+  static const String apiV1c = '/v1';
+
 
   static const String _baseUrlFromDefine = String.fromEnvironment(
     'API_BASE_URL',
@@ -352,7 +355,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .get(Uri.parse('$baseUrl$apiV1b/users/me'), headers: headers)
+          .get(Uri.parse('$baseUrl$apiV1c/users/me'), headers: headers)
           .timeout(_timeout);
       return User.fromJson(_handleResponse(response));
     } catch (e) {
@@ -368,7 +371,7 @@ class ApiService {
       if (email != null) body['email'] = email;
       final headers  = await _buildHeaders();
       final response = await _client
-          .put(Uri.parse('$baseUrl$apiV1b/users/me'),
+          .put(Uri.parse('$baseUrl$apiV1c/users/me'),
               headers: headers, body: json.encode(body))
           .timeout(_timeout);
       return User.fromJson(_handleResponse(response));
@@ -385,7 +388,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .get(Uri.parse('$baseUrl$apiV1b/header'), headers: headers)
+          .get(Uri.parse('$baseUrl$apiV1c/header/'), headers: headers)
           .timeout(_timeout);
       final data = _handleResponse(response);
       if (data is Map<String, dynamic>) return HeaderData.fromJson(data);
@@ -610,7 +613,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .get(Uri.parse('$baseUrl$apiV1b/tasks/'), headers: headers)
+          .get(Uri.parse('$baseUrl$apiV1c/tasks/...'), headers: headers)
           .timeout(_timeout);
       final data = _handleResponse(response);
       if (data is Map && data.containsKey('tasks')) {
@@ -629,7 +632,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .get(Uri.parse('$baseUrl$apiV1b/tasks/$taskId'), headers: headers)
+          .get(Uri.parse('$baseUrl$apiV1c/tasks/$taskId'), headers: headers)
           .timeout(_timeout);
       return Task.fromJson(_handleResponse(response));
     } catch (e) {
@@ -650,7 +653,7 @@ class ApiService {
       if (kDebugMode) debugPrint('Creating task: $body');
       final headers  = await _buildHeaders();
       final response = await _client
-          .post(Uri.parse('$baseUrl$apiV1b/tasks/create'),
+          .post(Uri.parse('$baseUrl$apiV1c/tasks/create'),
               headers: headers, body: json.encode(body))
           .timeout(_timeout);
       final data = _handleResponse(response);
@@ -666,7 +669,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .post(Uri.parse('$baseUrl$apiV1b/tasks/$taskId/stop'), headers: headers)
+          .post(Uri.parse('$baseUrl$apiV1c/tasks/$taskId/stop'), headers: headers)
           .timeout(_timeout);
       return Task.fromJson(_handleResponse(response));
     } catch (e) {
@@ -678,7 +681,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .post(Uri.parse('$baseUrl$apiV1b/tasks/$taskId/pause'), headers: headers)
+          .post(Uri.parse('$baseUrl$apiV1c/tasks/$taskId/pause'), headers: headers)
           .timeout(_timeout);
       return Task.fromJson(_handleResponse(response));
     } catch (e) {
@@ -690,7 +693,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .post(Uri.parse('$baseUrl$apiV1b/tasks/$taskId/resume'), headers: headers)
+          .post(Uri.parse('$baseUrl$apiV1c/tasks/$taskId/resume'), headers: headers)
           .timeout(_timeout);
       return Task.fromJson(_handleResponse(response));
     } catch (e) {
@@ -702,7 +705,7 @@ class ApiService {
     try {
       final headers  = await _buildHeaders();
       final response = await _client
-          .delete(Uri.parse('$baseUrl$apiV1b/tasks/$taskId'), headers: headers)
+          .delete(Uri.parse('$baseUrl$apiV1c/tasks/$taskId'), headers: headers)
           .timeout(_timeout);
       _handleResponse(response);
     } catch (e) {

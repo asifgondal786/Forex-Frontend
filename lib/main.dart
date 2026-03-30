@@ -11,6 +11,7 @@ import 'routes/app_routes.dart';
 import 'core/config/firebase_config.dart';
 import 'core/config/release_build_guard.dart';
 import 'services/api_service.dart';
+import 'services/chart_service.dart';
 import 'services/notification_service.dart';
 import 'services/firebase_service.dart';
 import 'services/live_updates_service.dart';
@@ -59,7 +60,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _validateUrlConfigOnBoot();
 
-  // Phase 13 - Notification service init
+  // Phase 16 — chart service init
+  await ChartService.init();
 
   bool firebaseReady = false;
   if (useFirebaseAuth) {
@@ -105,7 +107,7 @@ class ForexCompanionApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Services Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+        // ── Services ──────────────────────────────────────────────────
         Provider<ApiService>.value(value: apiService),
         if (firebaseService != null)
           Provider<FirebaseService>.value(value: firebaseService),
@@ -114,27 +116,41 @@ class ForexCompanionApp extends StatelessWidget {
           dispose: (_, service) => service.dispose(),
         ),
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Core providers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+        // ── Core providers ─────────────────────────────────────────────
         ChangeNotifierProvider(create: (_) => ModeProvider()..load()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Quick actions (loads persisted dismiss state on boot) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+        // ── Quick actions (loads persisted dismiss state on boot) ──────
         ChangeNotifierProvider(
           create: (_) => QuickActionsProvider()..load(),
         ),
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Custom setup preferences Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+        // ── Custom setup preferences ───────────────────────────────────
         ChangeNotifierProvider(create: (_) => CustomSetupProvider()),
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Mode-specific live data providers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-        ChangeNotifierProvider(create: (ctx) => MarketWatchProvider(apiService: ctx.read<ApiService>())..init()),
-        ChangeNotifierProvider(create: (ctx) => ChartProvider(ctx.read<ApiService>())),
-        ChangeNotifierProvider(create: (ctx) => TradeSignalsProvider(ctx.read<ApiService>())..init()),
-        ChangeNotifierProvider(create: (ctx) => NewsEventsProvider(ctx.read<ApiService>())..init()),
-        ChangeNotifierProvider(create: (ctx) => RiskProvider(ctx.read<ApiService>())),
-        ChangeNotifierProvider(create: (ctx) => PaperTradingProvider(ctx.read<ApiService>())),
+        // ── Mode-specific live data providers ──────────────────────────
+        ChangeNotifierProvider(
+          create: (ctx) =>
+              MarketWatchProvider(apiService: ctx.read<ApiService>())..init(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => ChartProvider(ctx.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) =>
+              TradeSignalsProvider(ctx.read<ApiService>())..init(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => NewsEventsProvider(ctx.read<ApiService>())..init(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => RiskProvider(ctx.read<ApiService>()),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) => PaperTradingProvider(ctx.read<ApiService>()),
+        ),
 
-        // Ã¢â€â‚¬Ã¢â€â‚¬ Feature providers Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+        // ── Feature providers ──────────────────────────────────────────
         ChangeNotifierProvider(
           create: (_) {
             final provider = TaskProvider(
@@ -181,5 +197,3 @@ class ForexCompanionApp extends StatelessWidget {
     );
   }
 }
-
-
