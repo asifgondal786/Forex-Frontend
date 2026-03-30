@@ -29,6 +29,9 @@ import 'providers/risk_provider.dart';
 import 'providers/paper_trading_provider.dart';
 import 'core/utils/runtime_url_resolver.dart';
 import 'helpers/mock_data_helper.dart';
+// 1. Import
+import 'providers/nlp_provider.dart';
+import 'screens/nlp_copilot_screen.dart';
 
 // Toggle Firebase initialization (Auth/Storage/etc)
 const bool useFirebaseAuth = true;
@@ -178,6 +181,13 @@ class ForexCompanionApp extends StatelessWidget {
             return provider;
           },
         ),
+
+      // 2. Register provider (inside MultiProvider)
+      ChangeNotifierProvider(
+      create: (_) => NlpProvider(ApiService()),
+    ),
+
+        
         ChangeNotifierProvider(
           create: (_) => AccountConnectionProvider()..loadConnections(),
         ),
@@ -185,6 +195,8 @@ class ForexCompanionApp extends StatelessWidget {
           create: (_) => AgentOrchestratorProvider(apiService: apiService),
         ),
       ],
+
+      
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) => MaterialApp(
           title: 'Forex Companion',

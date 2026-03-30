@@ -1,3 +1,4 @@
+import '../screens/nlp_copilot_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/dashboard/mode_router.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String charts = '/charts';
   static const String risk = '/risk';
   static const String paperTrading = '/paper-trading';
+  static const String copilot = '/copilot';
 
   static Map<String, WidgetBuilder> routes = {
     root: (_) => const AuthEntryScreen(),
@@ -58,6 +60,7 @@ class AppRoutes {
     risk: (_) => const _ProtectedRoute(child: RiskSimulatorScreen()),
     '/chart': (context) => const ChartScreen(),
     paperTrading: (_) => const _ProtectedRoute(child: PaperTradingScreen()),
+    copilot: (_) => const _ProtectedRoute(child: NlpCopilotScreen()),
     help: (_) => const _ProtectedRoute(
         child: PlaceholderScreen(title: 'Help & Support')),
   };
