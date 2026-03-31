@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/mode_provider.dart';
 import '../market_watch/market_watch_screen.dart';
@@ -29,7 +29,17 @@ class ModeRouter extends StatelessWidget {
       null                  => const EmbodiedAgentScreen(),
     };
 
-    return Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/onboarding',
+            (route) => false,
+          );
+        }
+      },
+      child: Stack(
       children: [
         Column(
           children: [
@@ -46,8 +56,7 @@ class ModeRouter extends StatelessWidget {
             icon: const Icon(Icons.candlestick_chart),
             label: const Text('Charts'),
           ),
-        ),
-      ],
+        ),      ),
     );
   }
 }
