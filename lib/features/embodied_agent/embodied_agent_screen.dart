@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +51,7 @@ class _EmbodiedAgentScreenState extends State<EmbodiedAgentScreen> {
           onPopInvokedWithResult: (didPop, result) {
             if (!didPop) {
               Navigator.of(context).pushNamedAndRemoveUntil(
-                '/dashboard',
+                '/home',
                 (route) => false,
               );
             }
@@ -2090,3 +2090,4 @@ String _formatTime(DateTime value) {
   final second = value.second.toString().padLeft(2, '0');
   return '$hour:$minute:$second';
 }
+

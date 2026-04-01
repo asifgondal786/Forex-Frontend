@@ -3,7 +3,6 @@ import '../app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-// import '../features/embodied_agent/embodied_agent_screen.dart';
 import '../features/auth/auth_entry_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
@@ -22,7 +21,8 @@ import '../features/paper_trading/paper_trading_screen.dart';
 
 class AppRoutes {
   static const String root = '/';
-  static const String dashboard = '/dashboard';
+  static const String home = '/home';            //  Primary authenticated route
+  static const String dashboard = '/dashboard'; //  Alias to /home
   static const String createTask = '/create-task';
   static const String taskHistory = '/task-history';
   static const String aiChat = '/ai-chat';
@@ -46,7 +46,8 @@ class AppRoutes {
     signup: (_) => const SignupScreen(),
     verify: (_) => const VerificationScreen(),
     reset: (_) => const PasswordResetScreen(),
-    dashboard: (_) => const _ProtectedRoute(child: AppShell()),
+    home: (_) => const _ProtectedRoute(child: AppShell()),        //  Primary
+    dashboard: (_) => const _ProtectedRoute(child: AppShell()),   //  Alias
     createTask: (_) => const _ProtectedRoute(child: TaskCreationScreen()),
     taskHistory: (_) => const _ProtectedRoute(child: TaskHistoryScreen()),
     aiChat: (_) => const _ProtectedRoute(child: AiChatScreen()),
@@ -122,15 +123,15 @@ class PlaceholderScreen extends StatelessWidget {
               size: 64,
               color: Colors.grey,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               '$title Page',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'This page is under construction',
               style: TextStyle(
@@ -143,5 +144,3 @@ class PlaceholderScreen extends StatelessWidget {
     );
   }
 }
-
-

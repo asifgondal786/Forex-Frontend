@@ -23,6 +23,7 @@ import 'services/live_updates_service.dart';
 
 // ── Existing providers (preserved from existing main.dart) ────────────────────
 import 'providers/mode_provider.dart';
+import 'providers/app_shell_provider.dart';
 import 'providers/quick_actions_provider.dart';
 import 'providers/custom_setup_provider.dart';
 import 'providers/task_provider.dart';
@@ -156,6 +157,7 @@ class TajirApp extends StatelessWidget {
         //    ModeProvider drives Beginner / Assisted / Semi / Full mode.
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ModeProvider()..load()),
+        ChangeNotifierProvider(create: (_) => AppShellProvider()),
 
         // ── Beginner-mode provider (new — drives overlay & guardrails UI) ───
         ChangeNotifierProvider(create: (_) => BeginnerModeProvider()..load()),
@@ -586,3 +588,4 @@ ThemeData _buildTheme(Brightness brightness) {
     ),
   );
 }
+

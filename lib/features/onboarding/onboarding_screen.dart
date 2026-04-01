@@ -101,8 +101,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   void _goHome() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const AppShell()),
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      '/home',
       (route) => false,
     );
   }
@@ -167,6 +167,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         if (!didPop) _onWillPop();
       },
       child: Scaffold(
+        appBar: modeProvider.hasChosen
+            ? AppBar(
+                leading: BackButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                title: const Text('Select Mode'),
+                centerTitle: true,
+              )
+            : null,
         backgroundColor:
             isDark ? const Color(0xFF0D0F14) : const Color(0xFFF5F7FA),
         body: FadeTransition(
@@ -407,3 +416,4 @@ class _ModeOption {
     required this.available,
   });
 }
+
