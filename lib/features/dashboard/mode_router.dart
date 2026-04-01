@@ -40,23 +40,25 @@ class ModeRouter extends StatelessWidget {
         }
       },
       child: Stack(
-      children: [
-        Column(
-          children: [
-            const EventCountdownWidget(),
-            Expanded(child: screen),
-          ],
-        ),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: FloatingActionButton.extended(
-            heroTag: 'charts_fab',
-            onPressed: () => Navigator.pushNamed(context, '/charts'),
-            icon: const Icon(Icons.candlestick_chart),
-            label: const Text('Charts'),
+        children: [
+          Column(
+            children: [
+              const EventCountdownWidget(),
+              Expanded(child: screen),
+            ],
           ),
-        ),      ),
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton.extended(
+              heroTag: 'charts_fab',
+              onPressed: () => Navigator.pushNamed(context, '/charts'),
+              icon: const Icon(Icons.candlestick_chart),
+              label: const Text('Charts'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/mode_provider.dart';
@@ -47,7 +47,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       mode: AppMode.aiChat,
       icon: Icons.chat_bubble_rounded,
       label: 'AI Chat',
-      description: 'Ask anything about Forex – raw, direct answers from Gemini AI.',
+      description: 'Ask anything about Forex - raw, direct answers from Gemini AI.',
       color: Color(0xFF6C63FF),
       available: true,
     ),
@@ -79,8 +79,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       mode: AppMode.customSetup,
       icon: Icons.tune_rounded,
       label: 'Custom Setup',
-      description: 'Configure your own dashboard – pick what matters to you.',
+      description: 'Configure your own dashboard - pick what matters to you.',
       color: Color(0xFFB8860B),
+      available: true,
+    ),
+    _ModeOption(
+      mode: AppMode.paperTrading,
+      icon: Icons.receipt_long_rounded,
+      label: 'Paper Trading',
+      description: 'Practice trading with virtual money - zero risk, real learning.',
+      color: Color(0xFF00BCD4),
       available: true,
     ),
   ];
@@ -92,6 +100,23 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       AppRoutes.dashboard,
       (route) => false,
     );
+  }
+
+  void _goHome() {
+    // If user already has a mode chosen, go straight to dashboard
+    final modeProvider = context.read<ModeProvider>();
+    if (modeProvider.hasChosen) {
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRoutes.dashboard,
+        (route) => false,
+      );
+    } else {
+      // No mode chosen yet — go to root (auth gate handles it)
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRoutes.root,
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _onWillPop() async {
@@ -122,6 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final modeProvider = context.watch<ModeProvider>();
 
     return PopScope(
       canPop: false,
@@ -137,7 +163,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             child: Column(
               children: [
                 const SizedBox(height: 36),
-                _buildHeader(),
+                _buildHeader(modeProvider),
                 const SizedBox(height: 28),
                 Expanded(
                   child: ListView.separated(
@@ -151,7 +177,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                   ),
                 ),
-                _buildBottomBar(),
+                _buildBottomBar(modeProvider),
               ],
             ),
           ),
@@ -160,11 +186,27 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ModeProvider modeProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
+          // Home button row — only shown if user already has a mode
+          if (modeProvider.hasChosen)
+            Align(
+              alignment: Alignment.centerRight,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: TextButton.icon(
+                  onPressed: _goHome,
+                  icon: const Icon(Icons.home_rounded, size: 18, color: Color(0xFF00C896)),
+                  label: const Text(
+                    'Home',
+                    style: TextStyle(color: Color(0xFF00C896), fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
           Container(
             width: 56,
             height: 56,
@@ -194,32 +236,61 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(ModeProvider modeProvider) {
     final ready = _selectedMode != null;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: AnimatedOpacity(
-        opacity: ready ? 1.0 : 0.4,
-        duration: const Duration(milliseconds: 250),
-        child: SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: ready ? _onConfirm : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00C896),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              elevation: 0,
-            ),
-            child: Text(
-              ready
-                  ? 'Start with ${_modes.firstWhere((m) => m.mode == _selectedMode).label}'
-                  : 'Select a mode to continue',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+      child: Column(
+        children: [
+          AnimatedOpacity(
+            opacity: ready ? 1.0 : 0.4,
+            duration: const Duration(milliseconds: 250),
+            child: MouseRegion(
+              cursor: ready ? SystemMouseCursors.click : SystemMouseCursors.basic,
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: ready ? _onConfirm : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C896),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    ready
+                        ? 'Start with ${_modes.firstWhere((m) => m.mode == _selectedMode).label}'
+                        : 'Select a mode to continue',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+          // Home button in bottom bar (always visible)
+          const SizedBox(height: 10),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: _goHome,
+                icon: const Icon(Icons.home_rounded, size: 18),
+                label: const Text(
+                  'Go to Home',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.grey,
+                  side: const BorderSide(color: Colors.grey, width: 1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -235,67 +306,70 @@ class _ModeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected
-              ? option.color.withValues(alpha: isDark ? 0.15 : 0.08)
-              : (isDark ? const Color(0xFF181B22) : Colors.white),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: selected ? option.color : Colors.transparent, width: 1.8),
-          boxShadow: selected
-              ? [BoxShadow(color: option.color.withValues(alpha: 0.18), blurRadius: 12, offset: const Offset(0, 4))]
-              : [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: option.color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: selected
+                ? option.color.withValues(alpha: isDark ? 0.15 : 0.08)
+                : (isDark ? const Color(0xFF181B22) : Colors.white),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: selected ? option.color : Colors.transparent, width: 1.8),
+            boxShadow: selected
+                ? [BoxShadow(color: option.color.withValues(alpha: 0.18), blurRadius: 12, offset: const Offset(0, 4))]
+                : [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: option.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(option.icon, color: option.color, size: 22),
               ),
-              child: Icon(option.icon, color: option.color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    option.label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: selected ? option.color : null,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option.label,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: selected ? option.color : null,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    option.description,
-                    style: TextStyle(fontSize: 12.5, color: Colors.grey.shade500, height: 1.4),
-                  ),
-                ],
+                    const SizedBox(height: 3),
+                    Text(
+                      option.description,
+                      style: TextStyle(fontSize: 12.5, color: Colors.grey.shade500, height: 1.4),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: selected ? option.color : Colors.transparent,
-                border: Border.all(color: selected ? option.color : Colors.grey.shade400, width: 2),
+              const SizedBox(width: 10),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? option.color : Colors.transparent,
+                  border: Border.all(color: selected ? option.color : Colors.grey.shade400, width: 2),
+                ),
+                child: selected ? const Icon(Icons.check, size: 13, color: Colors.white) : null,
               ),
-              child: selected ? const Icon(Icons.check, size: 13, color: Colors.white) : null,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

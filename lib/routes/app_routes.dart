@@ -1,5 +1,4 @@
-import '../screens/nlp_copilot_screen.dart';
-import '../features/onboarding/onboarding_screen.dart';
+﻿import '../features/onboarding/onboarding_screen.dart';
 import '../features/dashboard/mode_router.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -60,7 +59,6 @@ class AppRoutes {
     risk: (_) => const _ProtectedRoute(child: RiskSimulatorScreen()),
     '/chart': (context) => const ChartScreen(),
     paperTrading: (_) => const _ProtectedRoute(child: PaperTradingScreen()),
-    copilot: (_) => const _ProtectedRoute(child: NlpCopilotScreen()),
     help: (_) => const _ProtectedRoute(
         child: PlaceholderScreen(title: 'Help & Support')),
   };
@@ -145,3 +143,5 @@ class PlaceholderScreen extends StatelessWidget {
     );
   }
 }
+
+

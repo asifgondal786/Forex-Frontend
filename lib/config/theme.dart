@@ -175,6 +175,7 @@ class AppTheme {
     final resolvedForeground = foregroundColor ?? Colors.white;
 
     return ButtonStyle(
+      mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
       padding:
           padding == null ? null : WidgetStateProperty.all(padding),
       foregroundColor: WidgetStateProperty.resolveWith((states) {
