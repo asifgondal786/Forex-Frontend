@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../providers/trade_execution_provider.dart';
+import '../../providers/portfolio_provider.dart';
+import '../../providers/trade_execution.dart';
 import '../../providers/beginner_mode_provider.dart';
-import '../core/widgets/beginner_mode_overlay.dart';
+import '../../shared/widgets/beginner_mode_overlay.dart';
 
 /// Shows the full trade execution flow as a bottom sheet.
 /// Call: showTradeSetupSheet(context, pair: 'EUR/USD', direction: 'BUY')
@@ -233,6 +234,20 @@ class _SetupStepState extends State<_SetupStep> {
   final _tpCtrl = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _lotSize = widget.prov.lotSize;
+    _leverage = widget.prov.leverage;
+  }
+
+  @override
+  void dispose() {
+    _slCtrl.dispose();
+    _tpCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isBuy = widget.prov.direction == 'BUY';
     final dirColor = isBuy ? Colors.green : Colors.red;
@@ -391,8 +406,12 @@ class _SetupStepState extends State<_SetupStep> {
                 hint: 'Optional',
                 color: Colors.red,
                 onChanged: (v) {
-                  widget.prov
-                      .updateSetup(sl: double.tryParse(v));
+                  final parsed = double.tryParse(v);
+                  if (parsed == null && v.trim().isEmpty) {
+                    widget.prov.clearStopLoss();
+                    return;
+                  }
+                  widget.prov.updateSetup(sl: parsed);
                 },
               ),
             ),
@@ -404,8 +423,12 @@ class _SetupStepState extends State<_SetupStep> {
                 hint: 'Optional',
                 color: Colors.green,
                 onChanged: (v) {
-                  widget.prov
-                      .updateSetup(tp: double.tryParse(v));
+                  final parsed = double.tryParse(v);
+                  if (parsed == null && v.trim().isEmpty) {
+                    widget.prov.clearTakeProfit();
+                    return;
+                  }
+                  widget.prov.updateSetup(tp: parsed);
                 },
               ),
             ),
@@ -846,22 +869,27 @@ class _ActionBar extends StatelessWidget {
               onPressed: () async {
                 if (!isConfirm) {
                   // Check beginner mode confirmation
-                  final beginnerProv =
-                      context.read<BeginnerModeProvider>();
+                  final beginnerProv = context.read<BeginnerModeProvider>();
                   if (beginnerProv.isEnabled) {
-                    final ok = await beginnerConfirmTrade(
-                        context, prov.selectedPair ?? '');
+                    final ok =
+                        await beginnerConfirmTrade(context, prov.selectedPair ?? '');
                     if (!ok) return;
                   }
                   prov.proceedToConfirm();
                 } else {
                   HapticFeedback.heavyImpact();
                   final success = await prov.executeTrade('demo_token');
-                  if (!success && context.mounted) {
+                  if (!context.mounted) return;
+                  if (success) {
+                    final snapshot = prov.buildSnapshot();
+                    if (snapshot != null) {
+                      context.read<PortfolioProvider>().addOpenTrade(snapshot);
+                    }
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(prov.executionResult ??
-                            'Execution failed'),
+                        content:
+                            Text(prov.executionResult ?? 'Execution failed'),
                         backgroundColor: Colors.red,
                       ),
                     );

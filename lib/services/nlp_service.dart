@@ -88,7 +88,7 @@ class NlpService {
     return _api.openPaperTrade(
       userId:     userId,
       pair:       result.pair!,
-      direction:  result.direction!,
+      direction:  result.direction!.toUpperCase(),
       entryPrice: result.entryPrice!,
       stopLoss:   result.stopLoss!,
       takeProfit: result.takeProfit!,

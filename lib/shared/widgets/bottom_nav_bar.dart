@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/notification_provider.dart';
+import '../../providers/notification_provider.dart';
 
 class TajirBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -22,7 +22,7 @@ class TajirBottomNavBar extends StatelessWidget {
         color: scheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -128,7 +128,7 @@ class _NavItem extends StatelessWidget {
                     key: ValueKey(selected),
                     color: selected
                         ? scheme.primary
-                        : scheme.onSurface.withOpacity(0.4),
+                        : scheme.onSurface.withValues(alpha: 0.4),
                     size: 24,
                   ),
                 ),
@@ -163,7 +163,7 @@ class _NavItem extends StatelessWidget {
                     selected ? FontWeight.w700 : FontWeight.w400,
                 color: selected
                     ? scheme.primary
-                    : scheme.onSurface.withOpacity(0.4),
+                    : scheme.onSurface.withValues(alpha: 0.4),
               ),
               child: Text(label),
             ),

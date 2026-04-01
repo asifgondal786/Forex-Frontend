@@ -13,6 +13,7 @@ class _NlpCopilotScreenState extends State<NlpCopilotScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  late final NlpProvider _provider = NlpProvider();
 
   static const _suggestions = [
     'Buy EUR/USD with 1% risk',
@@ -26,6 +27,7 @@ class _NlpCopilotScreenState extends State<NlpCopilotScreen> {
     _controller.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
+    _provider.dispose();
     super.dispose();
   }
 
@@ -54,69 +56,64 @@ class _NlpCopilotScreenState extends State<NlpCopilotScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Consumer<NlpProvider>(
-      builder: (context, provider, _) {
-        // Auto-scroll when messages change
-        if (provider.messages.isNotEmpty) _scrollToBottom();
+    return ChangeNotifierProvider<NlpProvider>.value(
+      value: _provider,
+      child: Consumer<NlpProvider>(
+        builder: (context, provider, _) {
+          if (provider.messages.isNotEmpty) _scrollToBottom();
 
-        return Scaffold(
-          backgroundColor: colorScheme.surface,
-          appBar: AppBar(
-            title: const Text('AI Copilot'),
+          return Scaffold(
             backgroundColor: colorScheme.surface,
-            elevation: 0,
-            actions: [
-              if (provider.messages.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Clear chat',
-                  onPressed: provider.clearConversation,
+            appBar: AppBar(
+              title: const Text('AI Copilot'),
+              backgroundColor: colorScheme.surface,
+              elevation: 0,
+              actions: [
+                if (provider.messages.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    tooltip: 'Clear chat',
+                    onPressed: provider.clearConversation,
+                  ),
+              ],
+            ),
+            body: Column(
+              children: [
+                _StatusBanner(stage: provider.stage),
+                Expanded(
+                  child: provider.messages.isEmpty
+                      ? _EmptyState(
+                          suggestions: _suggestions,
+                          onSuggestion: (s) {
+                            _controller.text = s;
+                            _send(provider);
+                          },
+                        )
+                      : ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          itemCount: provider.messages.length,
+                          itemBuilder: (context, i) =>
+                              _ChatBubble(message: provider.messages[i]),
+                        ),
                 ),
-            ],
-          ),
-          body: Column(
-            children: [
-              // ── Status banner ─────────────────────────────────────────
-              _StatusBanner(stage: provider.stage),
-
-              // ── Chat messages ─────────────────────────────────────────
-              Expanded(
-                child: provider.messages.isEmpty
-                    ? _EmptyState(
-                        suggestions: _suggestions,
-                        onSuggestion: (s) {
-                          _controller.text = s;
-                          _send(provider);
-                        },
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        itemCount: provider.messages.length,
-                        itemBuilder: (context, i) =>
-                            _ChatBubble(message: provider.messages[i]),
-                      ),
-              ),
-
-              // ── Trade confirm/cancel bar ──────────────────────────────
-              if (provider.stage == NlpConversationStage.confirmed)
-                _ConfirmBar(
-                  onConfirm: provider.confirmTrade,
-                  onReject: provider.rejectTrade,
+                if (provider.stage == NlpConversationStage.confirmed)
+                  _ConfirmBar(
+                    onConfirm: provider.confirmTrade,
+                    onReject: provider.rejectTrade,
+                  ),
+                _InputBar(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  isLoading: provider.isLoading,
+                  onSend: () => _send(provider),
                 ),
-
-              // ── Input bar ─────────────────────────────────────────────
-              _InputBar(
-                controller: _controller,
-                focusNode: _focusNode,
-                isLoading: provider.isLoading,
-                onSend: () => _send(provider),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

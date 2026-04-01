@@ -16,7 +16,6 @@ import 'core/utils/runtime_url_resolver.dart';
 // ── Services (preserved from existing main.dart) ──────────────────────────────
 import 'services/api_service.dart';
 import 'services/chart_service.dart';
-import 'services/notification_service.dart';
 import 'services/firebase_service.dart';
 import 'services/live_updates_service.dart';
 
@@ -43,7 +42,7 @@ import 'providers/notification_provider.dart';
 import 'providers/beginner_mode_provider.dart';
 import 'providers/automation_provider.dart';
 import 'providers/social_provider.dart';
-import 'providers/trade_execution_provider.dart';
+import 'providers/trade_execution.dart';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 import 'helpers/mock_data_helper.dart';
@@ -417,7 +416,7 @@ ThemeData _buildTheme(Brightness brightness) {
         fontFamily: 'Inter',
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: colorScheme.surfaceContainerHighest,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -491,7 +490,7 @@ ThemeData _buildTheme(Brightness brightness) {
       shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: colorScheme.primary,
       unselectedLabelColor: colorScheme.onSurface.withValues(alpha: 0.5),
       indicatorColor: colorScheme.primary,
