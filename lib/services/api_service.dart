@@ -125,6 +125,18 @@ class ApiService {
     }
   }
 
+  /// Returns true if the Railway backend responds to /health within 5 seconds.
+static Future<bool> isHealthy() async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/health'),
+    ).timeout(const Duration(seconds: 5));
+    return response.statusCode == 200;
+  } catch (_) {
+    return false;
+  }
+}
+
   static void _assertReleaseTransportSecurity() {
     if (kDebugMode || _allowInsecureHttpInRelease || _isLocalApiTarget) return;
     if (baseUrl.toLowerCase().startsWith('http://')) {

@@ -266,28 +266,51 @@ class TajirApp extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Decides whether to show LoginScreen or AppShell.
-/// Listens to FirebaseAuth stream so the UI reacts automatically on
-/// sign-in / sign-out without manual navigation calls.
+///
+/// Navigation strategy:
+/// ─ Firebase enabled (production): StreamBuilder watches authStateChanges().
+///   When FirebaseService.signInWithEmail() succeeds it updates the auth state
+///   → stream fires → this widget rebuilds to AppShell automatically.
+///   onLoginSuccess is a safety-net push in case the stream hasn't propagated.
+///
+/// ─ Firebase disabled (dev / demo): onLoginSuccess navigates directly.
 class _AuthGate extends StatelessWidget {
   const _AuthGate();
+
+  /// Called by LoginScreen after successful sign-in.
+  /// Clears the full navigation stack so the back button on the dashboard
+  /// can never return to the login screen.
+  void _onLoginSuccess(BuildContext context) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AppShell()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     if (!useFirebaseAuth) {
-      // Firebase disabled — go straight to shell (dev / demo mode).
       return const AppShell();
     }
 
     return StreamBuilder<firebase_auth.User?>(
       stream: firebase_auth.FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // While Firebase resolves the persisted session, show a branded
-        // splash so there is no flash of the login screen.
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const _SplashScreen();
         }
+
         final user = snapshot.data;
-        return user != null ? const AppShell() : const LoginScreen();
+
+        if (user != null) {
+          // Persisted session on app relaunch — go straight to dashboard.
+          return const AppShell();
+        }
+
+        // Not signed in — show login screen with the success callback wired.
+        return LoginScreen(
+          onLoginSuccess: () => _onLoginSuccess(context),
+        );
       },
     );
   }
