@@ -1,8 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../app_shell.dart';
+import 'onboarding_mode_preview_screen.dart';
 import '../../providers/mode_provider.dart';
-import '../../routes/app_routes.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -14,6 +15,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen>
     with SingleTickerProviderStateMixin {
   AppMode? _selectedMode;
+  bool _isOpeningMode = false;
   late AnimationController _animController;
   late Animation<double> _fadeIn;
 
@@ -95,27 +97,37 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   void _onConfirm() {
     if (_selectedMode == null) return;
-    context.read<ModeProvider>().setMode(_selectedMode!);
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.dashboard,
+    _openModePreview(_selectedMode!);
+  }
+
+  void _goHome() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AppShell()),
       (route) => false,
     );
   }
 
-  void _goHome() {
-    // If user already has a mode chosen, go straight to dashboard
-    final modeProvider = context.read<ModeProvider>();
-    if (modeProvider.hasChosen) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRoutes.dashboard,
-        (route) => false,
+  Future<void> _openModePreview(AppMode mode) async {
+    if (_isOpeningMode) return;
+
+    setState(() {
+      _selectedMode = mode;
+      _isOpeningMode = true;
+    });
+
+    try {
+      await context.read<ModeProvider>().setMode(mode);
+      if (!mounted) return;
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => OnboardingModePreviewScreen(mode: mode),
+        ),
       );
-    } else {
-      // No mode chosen yet — go to root (auth gate handles it)
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        AppRoutes.root,
-        (route) => false,
-      );
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningMode = false);
+      }
     }
   }
 
@@ -173,7 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     itemBuilder: (context, i) => _ModeCard(
                       option: _modes[i],
                       selected: _selectedMode == _modes[i].mode,
-                      onTap: () => setState(() => _selectedMode = _modes[i].mode),
+                      onTap: () => _openModePreview(_modes[i].mode),
                     ),
                   ),
                 ),
@@ -201,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   onPressed: _goHome,
                   icon: const Icon(Icons.home_rounded, size: 18, color: Color(0xFF00C896)),
                   label: const Text(
-                    'Home',
+                    'Home Dashboard',
                     style: TextStyle(color: Color(0xFF00C896), fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -237,7 +249,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildBottomBar(ModeProvider modeProvider) {
-    final ready = _selectedMode != null;
+    final ready = _selectedMode != null && !_isOpeningMode;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       child: Column(
@@ -259,7 +271,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     elevation: 0,
                   ),
                   child: Text(
-                    ready
+                    _isOpeningMode
+                        ? 'Opening ${_selectedMode?.label ?? 'mode'}...'
+                        : ready
                         ? 'Start with ${_modes.firstWhere((m) => m.mode == _selectedMode).label}'
                         : 'Select a mode to continue',
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -279,7 +293,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 onPressed: _goHome,
                 icon: const Icon(Icons.home_rounded, size: 18),
                 label: const Text(
-                  'Go to Home',
+                  'Home Dashboard',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 style: OutlinedButton.styleFrom(

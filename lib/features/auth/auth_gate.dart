@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
+import '../../app_shell.dart';
 import '../embodied_agent/embodied_agent_screen.dart';
 import '../onboarding/onboarding_screen.dart';
-import '../dashboard/mode_router.dart';
 import '../../providers/task_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/header_provider.dart';
@@ -51,6 +51,21 @@ class _AuthGateState extends State<AuthGate> {
     });
   }
 
+  void _goToScreen(BuildContext context, Widget screen) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => screen),
+      (route) => false,
+    );
+  }
+
+  void _goAfterLogin(BuildContext context) {
+    final modeProvider = context.read<ModeProvider>();
+    final target = modeProvider.hasChosen
+        ? const AppShell()
+        : const OnboardingScreen();
+    _goToScreen(context, target);
+  }
+
   @override
   Widget build(BuildContext context) {
     // ── Dev shortcut (debug only) ──────────────────────────────────────────
@@ -63,7 +78,7 @@ class _AuthGateState extends State<AuthGate> {
 
     if (!_firebaseAuthReady) {
       _didFetch = false;
-      return LoginScreen(onLoginSuccess: () {});
+      return LoginScreen(onLoginSuccess: () => _goAfterLogin(context));
     }
 
     return StreamBuilder<firebase_auth.User?>(
@@ -79,7 +94,7 @@ class _AuthGateState extends State<AuthGate> {
 
         if (user == null) {
           _didFetch = false;
-          return LoginScreen(onLoginSuccess: () {});
+          return LoginScreen(onLoginSuccess: () => _goAfterLogin(context));
         }
 
         final needsEmail = !(user.emailVerified);
@@ -106,8 +121,8 @@ class _AuthGateState extends State<AuthGate> {
           return const OnboardingScreen();
         }
 
-        // Returning user → go straight to their chosen mode
-        return const ModeRouter();
+        // Returning user → go straight to the main dashboard shell
+        return const AppShell();
       },
     );
   }

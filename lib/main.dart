@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 // ── Shell & Auth ──────────────────────────────────────────────────────────────
 import 'app_shell.dart';
 import 'features/auth/login_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
+import 'routes/app_routes.dart';
 
 // ── Core config (preserved from existing main.dart) ──────────────────────────
 import 'core/config/firebase_config.dart';
@@ -250,6 +252,7 @@ class TajirApp extends StatelessWidget {
           theme: _buildTheme(Brightness.light),
           darkTheme: _buildTheme(Brightness.dark),
           themeMode: themeProvider.themeMode, // ← honours Settings toggle
+          routes: AppRoutes.routes,
           // Preserve existing named-route navigation (AppRoutes.routes).
           // AppShell is reached via _AuthGate; named routes still work for
           // deep links and in-app navigation via Navigator.pushNamed.
@@ -276,20 +279,33 @@ class TajirApp extends StatelessWidget {
 class _AuthGate extends StatelessWidget {
   const _AuthGate();
 
-  /// Called by LoginScreen after successful sign-in.
-  /// Clears the full navigation stack so the back button on the dashboard
-  /// can never return to the login screen.
-  void _onLoginSuccess(BuildContext context) {
+  void _goToScreen(BuildContext context, Widget screen) {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const AppShell()),
+      MaterialPageRoute(builder: (_) => screen),
       (route) => false,
     );
   }
 
+  void _onLoginSuccess(BuildContext context) {
+    final modeProvider = context.read<ModeProvider>();
+    final target = modeProvider.hasChosen
+        ? const AppShell()
+        : const OnboardingScreen();
+    _goToScreen(context, target);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final modeProvider = context.watch<ModeProvider>();
+
+    if (!modeProvider.loaded) {
+      return const _SplashScreen();
+    }
+
     if (!useFirebaseAuth) {
-      return const AppShell();
+      return modeProvider.hasChosen
+          ? const AppShell()
+          : const OnboardingScreen();
     }
 
     return StreamBuilder<firebase_auth.User?>(
@@ -302,8 +318,9 @@ class _AuthGate extends StatelessWidget {
         final user = snapshot.data;
 
         if (user != null) {
-          // Persisted session on app relaunch — go straight to dashboard.
-          return const AppShell();
+          return modeProvider.hasChosen
+              ? const AppShell()
+              : const OnboardingScreen();
         }
 
         // Not signed in — show login screen with the success callback wired.
@@ -384,6 +401,13 @@ class _SplashScreen extends StatelessWidget {
 
 ThemeData _buildTheme(Brightness brightness) {
   final isDark = brightness == Brightness.dark;
+  final interactiveMouseCursor =
+      WidgetStateProperty.resolveWith<MouseCursor?>((states) {
+    if (states.contains(WidgetState.disabled)) {
+      return SystemMouseCursors.basic;
+    }
+    return SystemMouseCursors.click;
+  });
 
   final colorScheme = ColorScheme.fromSeed(
     seedColor: const Color(0xFF2563EB), // Tajir blue
@@ -432,6 +456,8 @@ ThemeData _buildTheme(Brightness brightness) {
           fontWeight: FontWeight.w700,
           fontFamily: 'Inter',
         ),
+      ).copyWith(
+        mouseCursor: interactiveMouseCursor,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -445,6 +471,8 @@ ThemeData _buildTheme(Brightness brightness) {
           fontWeight: FontWeight.w600,
           fontFamily: 'Inter',
         ),
+      ).copyWith(
+        mouseCursor: interactiveMouseCursor,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -454,6 +482,23 @@ ThemeData _buildTheme(Brightness brightness) {
           fontWeight: FontWeight.w600,
           fontFamily: 'Inter',
         ),
+      ).copyWith(
+        mouseCursor: interactiveMouseCursor,
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Inter',
+        ),
+      ).copyWith(
+        mouseCursor: interactiveMouseCursor,
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        mouseCursor: interactiveMouseCursor,
       ),
     ),
     dividerTheme: DividerThemeData(
@@ -462,6 +507,7 @@ ThemeData _buildTheme(Brightness brightness) {
       thickness: 1,
     ),
     switchTheme: SwitchThemeData(
+      mouseCursor: interactiveMouseCursor,
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) return Colors.white;
         return isDark ? Colors.grey.shade600 : Colors.grey.shade400;
@@ -470,6 +516,15 @@ ThemeData _buildTheme(Brightness brightness) {
         if (states.contains(WidgetState.selected)) return colorScheme.primary;
         return isDark ? Colors.grey.shade800 : Colors.grey.shade300;
       }),
+    ),
+    checkboxTheme: CheckboxThemeData(
+      mouseCursor: interactiveMouseCursor,
+    ),
+    radioTheme: RadioThemeData(
+      mouseCursor: interactiveMouseCursor,
+    ),
+    listTileTheme: ListTileThemeData(
+      mouseCursor: interactiveMouseCursor,
     ),
     sliderTheme: SliderThemeData(
       activeTrackColor: colorScheme.primary,

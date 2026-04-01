@@ -157,9 +157,9 @@ class RiskProvider extends ChangeNotifier {
       for (int t = 0; t < _numTrades; t++) {
         final isWin = rand.nextDouble() < _winRate;
         balance = isWin ? balance + _avgWin : balance - _avgLoss;
-        balance = balance.clamp(0, double.infinity);
+        balance = balance.clamp(0.0, double.infinity).toDouble();
         if (balance > peak) peak = balance;
-        final dd = peak > 0 ? (peak - balance) / peak : 0;
+        final double dd = peak > 0 ? (peak - balance) / peak : 0.0;
         if (dd > maxDd) maxDd = dd;
         curve.add(balance);
       }

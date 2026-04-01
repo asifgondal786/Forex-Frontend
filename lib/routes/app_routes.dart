@@ -1,5 +1,5 @@
 ﻿import '../features/onboarding/onboarding_screen.dart';
-import '../features/dashboard/mode_router.dart';
+import '../app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -46,7 +46,7 @@ class AppRoutes {
     signup: (_) => const SignupScreen(),
     verify: (_) => const VerificationScreen(),
     reset: (_) => const PasswordResetScreen(),
-    dashboard: (_) => const _ProtectedRoute(child: ModeRouter()),
+    dashboard: (_) => const _ProtectedRoute(child: AppShell()),
     createTask: (_) => const _ProtectedRoute(child: TaskCreationScreen()),
     taskHistory: (_) => const _ProtectedRoute(child: TaskHistoryScreen()),
     aiChat: (_) => const _ProtectedRoute(child: AiChatScreen()),
