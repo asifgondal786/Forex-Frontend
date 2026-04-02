@@ -4,10 +4,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/api_service.dart';
 import '../../services/firebase_service.dart';
+import '../../services/security_service.dart';
 import '../../core/models/user.dart' as app_user;
 import '../../core/widgets/app_background.dart';
 import '../../core/utils/runtime_url_resolver.dart';
 import '../../routes/app_routes.dart';
+
+enum _SignupPlan { freeTrial, subscribeNow }
+enum _SignupNotificationChannel { email, mobile, whatsapp }
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -28,12 +32,19 @@ class _SignupScreenState extends State<SignupScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
+  final _tradePinController = TextEditingController();
+  final _confirmTradePinController = TextEditingController();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _obscureTradePin = true;
+  bool _obscureConfirmTradePin = true;
   String? _errorMessage;
   bool _accountExistsHint = false;
+  _SignupPlan _selectedPlan = _SignupPlan.freeTrial;
+  _SignupNotificationChannel _notificationChannel =
+      _SignupNotificationChannel.email;
   static final RegExp _invisibleChars = RegExp(
     r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
   );
@@ -50,6 +61,8 @@ class _SignupScreenState extends State<SignupScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _usernameController.dispose();
+    _tradePinController.dispose();
+    _confirmTradePinController.dispose();
     super.dispose();
   }
 
@@ -92,6 +105,17 @@ class _SignupScreenState extends State<SignupScreen> {
       return false;
     }
 
+    if (_tradePinController.text.length != 6 ||
+        int.tryParse(_tradePinController.text) == null) {
+      setState(() => _errorMessage = 'Trade PIN must be exactly 6 digits');
+      return false;
+    }
+
+    if (_tradePinController.text != _confirmTradePinController.text) {
+      setState(() => _errorMessage = 'Trade PIN entries do not match');
+      return false;
+    }
+
     return true;
   }
 
@@ -125,9 +149,12 @@ class _SignupScreenState extends State<SignupScreen> {
               'title': _titleController.text.trim(),
               'mobile': _mobileController.text.trim(),
               'address': _addressController.text.trim(),
+              'subscription_plan': _selectedPlan.name,
+              'notification_channel': _notificationChannel.name,
             },
           );
           await _firebaseService.createUserDocument(appUser);
+          await SecurityService.saveTradePin(_tradePinController.text.trim());
           var verificationMessage =
               'Account created! Verification email sent to ${user.email ?? normalizedEmail}.';
           try {
@@ -506,6 +533,128 @@ class _SignupScreenState extends State<SignupScreen> {
                                   !_obscureConfirmPassword);
                             },
                           ),
+                          const SizedBox(height: 24),
+
+                          Text(
+                            'Plan & Security',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              ChoiceChip(
+                                label: const Text('1 Month Free'),
+                                selected:
+                                    _selectedPlan == _SignupPlan.freeTrial,
+                                onSelected: (_) => setState(
+                                  () => _selectedPlan = _SignupPlan.freeTrial,
+                                ),
+                              ),
+                              ChoiceChip(
+                                label: const Text('Subscribe Now'),
+                                selected:
+                                    _selectedPlan == _SignupPlan.subscribeNow,
+                                onSelected: (_) => setState(
+                                  () => _selectedPlan =
+                                      _SignupPlan.subscribeNow,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.04),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.08),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedPlan == _SignupPlan.freeTrial
+                                      ? 'Your account starts on the free trial. Subscription can be activated later from the dashboard.'
+                                      : 'After signup you can continue with Bank, Jazz Cash, Easy Paisa, or Payoneer from the dashboard subscription flow.',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 12,
+                                    height: 1.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                DropdownButtonFormField<_SignupNotificationChannel>(
+                                  initialValue: _notificationChannel,
+                                  dropdownColor: const Color(0xFF111827),
+                                  decoration: InputDecoration(
+                                    labelText: 'Preferred Notification Channel',
+                                    labelStyle: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                    filled: true,
+                                    fillColor:
+                                        Colors.white.withValues(alpha: 0.05),
+                                  ),
+                                  style: const TextStyle(color: Colors.white),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: _SignupNotificationChannel.email,
+                                      child: Text('Email'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: _SignupNotificationChannel.mobile,
+                                      child: Text('Mobile'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value:
+                                          _SignupNotificationChannel.whatsapp,
+                                      child: Text('WhatsApp'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(
+                                        () => _notificationChannel = value,
+                                      );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildPasswordField(
+                            controller: _tradePinController,
+                            label: 'Trade PIN',
+                            hint: '6 digits for sensitive actions',
+                            obscure: _obscureTradePin,
+                            keyboardType: TextInputType.number,
+                            onToggle: () {
+                              setState(
+                                  () => _obscureTradePin = !_obscureTradePin);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildPasswordField(
+                            controller: _confirmTradePinController,
+                            label: 'Confirm Trade PIN',
+                            hint: 'Re-enter your 6-digit PIN',
+                            obscure: _obscureConfirmTradePin,
+                            keyboardType: TextInputType.number,
+                            onToggle: () {
+                              setState(() => _obscureConfirmTradePin =
+                                  !_obscureConfirmTradePin);
+                            },
+                          ),
                           const SizedBox(height: 28),
 
                           // Signup Button
@@ -662,6 +811,7 @@ class _SignupScreenState extends State<SignupScreen> {
     required String hint,
     required bool obscure,
     required VoidCallback onToggle,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,6 +829,7 @@ class _SignupScreenState extends State<SignupScreen> {
         TextField(
           controller: controller,
           obscureText: obscure,
+          keyboardType: keyboardType,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 14,

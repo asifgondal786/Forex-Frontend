@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../../app_shell.dart';
+import '../../providers/app_shell_provider.dart';
 import '../../providers/mode_provider.dart';
+import '../../routes/app_routes.dart';
 import '../ai_chat/ai_chat_screen.dart';
 import '../custom_setup/custom_setup_screen.dart';
 import '../embodied_agent/embodied_agent_screen.dart';
@@ -19,8 +21,22 @@ class OnboardingModePreviewScreen extends StatelessWidget {
   });
 
   void _goHome(BuildContext context) {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const AppShell()),
+    context.read<AppShellProvider>().setTab(0);
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.home,
+      (route) => false,
+    );
+  }
+
+  void _goBackToModes(BuildContext context) {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+
+    navigator.pushNamedAndRemoveUntil(
+      AppRoutes.onboarding,
       (route) => false,
     );
   }
@@ -28,8 +44,8 @@ class OnboardingModePreviewScreen extends StatelessWidget {
   Widget _buildScreen() {
     return switch (mode) {
       AppMode.marketWatch => const MarketWatchScreen(),
-      AppMode.aiChat => const AiChatScreen(),
-      AppMode.aiCopilot => const EmbodiedAgentScreen(),
+      AppMode.aiChat => const AiChatScreen(embeddedInPreview: true),
+      AppMode.aiCopilot => const EmbodiedAgentScreen(embeddedInPreview: true),
       AppMode.tradeSignals => const TradeSignalsScreen(),
       AppMode.newsEvents => const NewsEventsScreen(),
       AppMode.customSetup => const CustomSetupScreen(),
@@ -39,91 +55,30 @@ class OnboardingModePreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(child: _buildScreen()),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Row(
-                children: [
-                  _OverlayPillButton(
-                    icon: Icons.arrow_back_rounded,
-                    label: 'On Boarding Screen',
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
-                  const Spacer(),
-                  _OverlayPillButton(
-                    icon: Icons.home_rounded,
-                    label: 'Home Dashboard',
-                    onTap: () => _goHome(context),
-                  ),
-                ],
-              ),
-            ),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _goBackToModes(context);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Back to Modes',
+            onPressed: () => _goBackToModes(context),
+            icon: const Icon(Icons.arrow_back_rounded),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OverlayPillButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _OverlayPillButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(999),
-          child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: scheme.surface.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: scheme.outline.withValues(alpha: 0.18),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+          title: Text(mode.label),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              tooltip: 'Home Dashboard',
+              onPressed: () => _goHome(context),
+              icon: const Icon(Icons.home_rounded),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 18, color: scheme.primary),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
+        body: _buildScreen(),
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+
 import '../../providers/notification_provider.dart';
 import '../../providers/beginner_mode_provider.dart';
+import '../../routes/app_routes.dart';
 import '../notifications/notifications_screen.dart';
 import '../automation/automation_screen.dart';
 import '../social/social_screen.dart';
@@ -42,7 +44,6 @@ class MoreScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-
                 // ── Profile card ─────────────────────────────────────────────
                 _ProfileCard(scheme: scheme, beginner: beginner),
                 const SizedBox(height: 24),
@@ -79,8 +80,7 @@ class MoreScreen extends StatelessWidget {
                       title: 'Risk Simulator',
                       subtitle: 'Model risk before you trade',
                       badge: null,
-                      onTap: () =>
-                          _push(context, const RiskSimulatorScreen()),
+                      onTap: () => _push(context, const RiskSimulatorScreen()),
                     ),
                   ],
                 ),
@@ -92,13 +92,21 @@ class MoreScreen extends StatelessWidget {
                   scheme: scheme,
                   items: [
                     _MenuItem(
+                      icon: Icons.admin_panel_settings_outlined,
+                      iconColor: Colors.indigo,
+                      title: 'User/Admin Dashboard',
+                      subtitle: 'Profile, broker link and alert controls',
+                      badge: null,
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.profile),
+                    ),
+                    _MenuItem(
                       icon: Icons.notifications_outlined,
                       iconColor: Colors.teal,
                       title: 'Notifications',
                       subtitle: 'Alerts & activity feed',
                       badge: unread > 0 ? unread : null,
-                      onTap: () =>
-                          _push(context, const NotificationsScreen()),
+                      onTap: () => _push(context, const NotificationsScreen()),
                     ),
                     _MenuItem(
                       icon: Icons.settings_outlined,
@@ -179,8 +187,7 @@ class MoreScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmSignOut(
-      BuildContext context, ColorScheme scheme) async {
+  Future<void> _confirmSignOut(BuildContext context, ColorScheme scheme) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -206,6 +213,7 @@ class MoreScreen extends StatelessWidget {
     if (confirmed != true || !context.mounted) return;
 
     await firebase_auth.FirebaseAuth.instance.signOut();
+    if (!context.mounted) return;
 
     // Navigate to LoginScreen and clear the stack.
     // onLoginSuccess wired back to AppShell via _AuthGate in main.dart.
@@ -237,9 +245,8 @@ class _ProfileCard extends StatelessWidget {
     final user = firebase_auth.FirebaseAuth.instance.currentUser;
     final email = user?.email ?? 'demo@example.com';
     final displayName = user?.displayName ?? email.split('@').first;
-    final initials = displayName.isNotEmpty
-        ? displayName[0].toUpperCase()
-        : '?';
+    final initials =
+        displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -307,7 +314,7 @@ class _ProfileCard extends StatelessWidget {
 
           // Edit button
           IconButton(
-            onPressed: () {},
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
             icon: Icon(
               Icons.edit_outlined,
               color: scheme.primary,
@@ -328,8 +335,7 @@ class _BeginnerToggleCard extends StatelessWidget {
   final ColorScheme scheme;
   final BeginnerModeProvider beginner;
 
-  const _BeginnerToggleCard(
-      {required this.scheme, required this.beginner});
+  const _BeginnerToggleCard({required this.scheme, required this.beginner});
 
   @override
   Widget build(BuildContext context) {
@@ -339,8 +345,8 @@ class _BeginnerToggleCard extends StatelessWidget {
         color: Colors.amber.withValues(alpha: beginner.isEnabled ? 0.12 : 0.06),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.amber.withValues(
-              alpha: beginner.isEnabled ? 0.4 : 0.15),
+          color:
+              Colors.amber.withValues(alpha: beginner.isEnabled ? 0.4 : 0.15),
         ),
       ),
       child: Row(
@@ -352,8 +358,8 @@ class _BeginnerToggleCard extends StatelessWidget {
               color: Colors.amber.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.school_rounded,
-                color: Colors.amber, size: 18),
+            child:
+                const Icon(Icons.school_rounded, color: Colors.amber, size: 18),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -482,8 +488,7 @@ class _MenuItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: item.onTap,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         width: 36,
         height: 36,
@@ -516,8 +521,7 @@ class _MenuItemTile extends StatelessWidget {
           // Notification badge
           if (item.badge != null)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(10),

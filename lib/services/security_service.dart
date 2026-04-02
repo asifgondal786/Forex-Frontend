@@ -13,6 +13,7 @@ class SecurityService {
   static const String _tradeTokenKey = 'security_trade_token';
   static const String _tradePayloadKey = 'security_trade_payload';
   static const String _tradeTokenExpiryKey = 'security_trade_token_expiry';
+  static const String _tradePinHashKey = 'security_trade_pin_hash';
 
   static const String _placeholderQrBase64 =
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jxaoAAAAASUVORK5CYII=';
@@ -58,6 +59,9 @@ class SecurityService {
     final token = DateTime.now().microsecondsSinceEpoch % 1000000;
     return token.toString().padLeft(6, '0');
   }
+
+  static String _hashTradePin(String pin) =>
+      Object.hashAll(pin.codeUnits).toUnsigned(32).toRadixString(16);
 
   static Future<List<Map<String, dynamic>>> _loadTrustedDevices() async {
     final prefs = await _prefs;
@@ -185,6 +189,41 @@ class SecurityService {
 
   static Future<List<Map<String, dynamic>>> listTrustedDevices() async {
     return _loadTrustedDevices();
+  }
+
+  static Future<bool> saveTradePin(String pin) async {
+    if (pin.length != 6 || int.tryParse(pin) == null) {
+      return false;
+    }
+
+    final prefs = await _prefs;
+    await prefs.setString(_tradePinHashKey, _hashTradePin(pin));
+    return true;
+  }
+
+  static Future<bool> hasTradePin() async {
+    final prefs = await _prefs;
+    final stored = prefs.getString(_tradePinHashKey);
+    return stored != null && stored.isNotEmpty;
+  }
+
+  static Future<bool> verifyTradePin(String pin) async {
+    if (pin.length != 6 || int.tryParse(pin) == null) {
+      return false;
+    }
+
+    final prefs = await _prefs;
+    final stored = prefs.getString(_tradePinHashKey);
+    if (stored == null || stored.isEmpty) {
+      return false;
+    }
+
+    return stored == _hashTradePin(pin);
+  }
+
+  static Future<void> clearTradePin() async {
+    final prefs = await _prefs;
+    await prefs.remove(_tradePinHashKey);
   }
 
   static Future<String?> generateTradeToken(

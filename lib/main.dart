@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -175,12 +175,10 @@ class TajirApp extends StatelessWidget {
           create: (ctx) => ChartProvider(ctx.read<ApiService>()),
         ),
         ChangeNotifierProvider(
-          create: (ctx) =>
-              TradeSignalsProvider(ctx.read<ApiService>())..init(),
+          create: (ctx) => TradeSignalsProvider(ctx.read<ApiService>())..init(),
         ),
         ChangeNotifierProvider(
-          create: (ctx) =>
-              NewsEventsProvider(ctx.read<ApiService>())..init(),
+          create: (ctx) => NewsEventsProvider(ctx.read<ApiService>())..init(),
         ),
         ChangeNotifierProvider(
           create: (ctx) => RiskProvider(ctx.read<ApiService>()),
@@ -238,8 +236,7 @@ class TajirApp extends StatelessWidget {
           create: (_) => AccountConnectionProvider()..loadConnections(),
         ),
         ChangeNotifierProvider(
-          create: (_) =>
-              AgentOrchestratorProvider(apiService: apiService),
+          create: (_) => AgentOrchestratorProvider(apiService: apiService),
         ),
       ],
 
@@ -254,10 +251,8 @@ class TajirApp extends StatelessWidget {
           theme: _buildTheme(Brightness.light),
           darkTheme: _buildTheme(Brightness.dark),
           themeMode: themeProvider.themeMode, // ← honours Settings toggle
-          routes: AppRoutes.routes,
-          // Preserve existing named-route navigation (AppRoutes.routes).
-          // AppShell is reached via _AuthGate; named routes still work for
-          // deep links and in-app navigation via Navigator.pushNamed.
+          routes: AppRoutes.materialRoutes,
+          onGenerateRoute: AppRoutes.onGenerateRoute,
           home: const _AuthGate(),
         ),
       ),
@@ -290,9 +285,8 @@ class _AuthGate extends StatelessWidget {
 
   void _onLoginSuccess(BuildContext context) {
     final modeProvider = context.read<ModeProvider>();
-    final target = modeProvider.hasChosen
-        ? const AppShell()
-        : const OnboardingScreen();
+    final target =
+        modeProvider.hasChosen ? const AppShell() : const OnboardingScreen();
     _goToScreen(context, target);
   }
 
@@ -452,8 +446,7 @@ ThemeData _buildTheme(Brightness brightness) {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         elevation: 0,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
           fontWeight: FontWeight.w700,
           fontFamily: 'Inter',
@@ -465,10 +458,8 @@ ThemeData _buildTheme(Brightness brightness) {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: colorScheme.onSurface,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        side: BorderSide(
-            color: colorScheme.outline.withValues(alpha: 0.3)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.3)),
         textStyle: const TextStyle(
           fontWeight: FontWeight.w600,
           fontFamily: 'Inter',
@@ -544,8 +535,7 @@ ThemeData _buildTheme(Brightness brightness) {
         color: colorScheme.onSurface,
       ),
       side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     tabBarTheme: TabBarThemeData(
       labelColor: colorScheme.primary,
@@ -573,8 +563,7 @@ ThemeData _buildTheme(Brightness brightness) {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
       ),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       hintStyle: TextStyle(
         color: colorScheme.onSurface.withValues(alpha: 0.35),
         fontFamily: 'Inter',
@@ -583,9 +572,7 @@ ThemeData _buildTheme(Brightness brightness) {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
     ),
   );
 }
-

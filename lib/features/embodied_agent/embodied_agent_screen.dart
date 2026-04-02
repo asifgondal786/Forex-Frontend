@@ -1,4 +1,4 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +13,12 @@ import 'widgets/forex_feed_widget.dart';
 import 'widgets/news_sentiment_widget.dart';
 
 class EmbodiedAgentScreen extends StatefulWidget {
-  const EmbodiedAgentScreen({super.key});
+  final bool embeddedInPreview;
+
+  const EmbodiedAgentScreen({
+    super.key,
+    this.embeddedInPreview = false,
+  });
 
   @override
   State<EmbodiedAgentScreen> createState() => _EmbodiedAgentScreenState();
@@ -46,6 +51,36 @@ class _EmbodiedAgentScreenState extends State<EmbodiedAgentScreen> {
         final viewport = MediaQuery.of(context).size;
         final isMobile = viewport.width < 980;
         final isTinyViewport = viewport.width <= 260 || viewport.height <= 520;
+        final screen = Scaffold(
+          floatingActionButton: _KillSwitchFab(agent: agent),
+          body: AppBackground(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildTopBar(agent, isMobile, isTinyViewport),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        isMobile ? (isTinyViewport ? 8 : 12) : 18,
+                        isTinyViewport ? 8 : 10,
+                        isMobile ? (isTinyViewport ? 8 : 12) : 18,
+                        isTinyViewport ? 8 : 12,
+                      ),
+                      child: isMobile
+                          ? _buildMobileLayout(agent, isTinyViewport)
+                          : _buildDesktopLayout(agent),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        if (widget.embeddedInPreview) {
+          return screen;
+        }
+
         return PopScope(
           canPop: false,
           onPopInvokedWithResult: (didPop, result) {
@@ -56,31 +91,7 @@ class _EmbodiedAgentScreenState extends State<EmbodiedAgentScreen> {
               );
             }
           },
-          child: Scaffold(
-            floatingActionButton: _KillSwitchFab(agent: agent),
-            body: AppBackground(
-              child: SafeArea(
-                child: Column(
-                  children: [
-                    _buildTopBar(agent, isMobile, isTinyViewport),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          isMobile ? (isTinyViewport ? 8 : 12) : 18,
-                          isTinyViewport ? 8 : 10,
-                          isMobile ? (isTinyViewport ? 8 : 12) : 18,
-                          isTinyViewport ? 8 : 12,
-                        ),
-                        child: isMobile
-                            ? _buildMobileLayout(agent, isTinyViewport)
-                            : _buildDesktopLayout(agent),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          child: screen,
         );
       },
     );
@@ -2090,4 +2101,3 @@ String _formatTime(DateTime value) {
   final second = value.second.toString().padLeft(2, '0');
   return '$hour:$minute:$second';
 }
-

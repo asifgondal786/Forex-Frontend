@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/firebase_service.dart';
 import '../../services/api_service.dart';
+import '../../services/security_lockout_service.dart';
 import '../../core/widgets/app_background.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,9 +14,9 @@ class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
 
   const LoginScreen({
-    Key? key,
+    super.key,
     required this.onLoginSuccess,
-  }) : super(key: key);
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -30,30 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
-
-  // ── Rate limiting ──────────────────────────────────────────────────────────
-  static const int _maxAttempts = 5;
-  static const Duration _lockoutDuration = Duration(minutes: 20);
-  int _failedAttempts = 0;
-  DateTime? _lockedUntil;
-
-  bool get _isLockedOut {
-    if (_lockedUntil == null) return false;
-    if (DateTime.now().isAfter(_lockedUntil!)) {
-      _lockedUntil = null;
-      _failedAttempts = 0;
-      return false;
-    }
-    return true;
-  }
-
-  String get _lockoutMessage {
-    if (_lockedUntil == null) return '';
-    final remaining = _lockedUntil!.difference(DateTime.now());
-    final mins = remaining.inMinutes;
-    final secs = remaining.inSeconds % 60;
-    return 'Too many attempts. Try again in ${mins}m ${secs}s.';
-  }
 
   static final RegExp _invisibleChars = RegExp(
     r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
@@ -70,14 +47,19 @@ class _LoginScreenState extends State<LoginScreen> {
   // ── Login handler ──────────────────────────────────────────────────────────
 
   Future<void> _handleLogin() async {
-    if (_isLockedOut) {
-      setState(() => _errorMessage = _lockoutMessage);
-      return;
-    }
     if (!_validateInputs()) return;
 
     final normalizedEmail = _normalizeEmail(_emailController.text);
     _emailController.text = normalizedEmail;
+
+    final locked = await SecurityLockoutService.isLocked(normalizedEmail);
+    if (locked) {
+      final message =
+          await SecurityLockoutService.lockMessage(normalizedEmail);
+      if (!mounted) return;
+      setState(() => _errorMessage = message);
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -93,30 +75,31 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (user != null) {
+        await SecurityLockoutService.resetOnSuccess(normalizedEmail);
+        if (!mounted) return;
         debugPrint('Login successful — navigating to dashboard');
-        // ── This is the key line ──────────────────────────────────────────
-        // widget.onLoginSuccess() is provided by _AuthGate in main.dart.
-        // It calls Navigator.pushAndRemoveUntil(AppShell) which:
-        //   1. Pushes AppShell (the main dashboard with bottom nav)
-        //   2. Removes ALL previous routes (login screen, splash, etc.)
-        // The user can never press back to reach the login screen again.
         widget.onLoginSuccess();
       } else {
         setState(() => _errorMessage = 'Unable to sign in. Please try again.');
       }
     } on firebase_auth.FirebaseAuthException catch (e) {
-      if (!mounted) return;
       final code = e.code.toLowerCase().trim();
-      _failedAttempts++;
-
-      if (_failedAttempts >= _maxAttempts) {
-        _lockedUntil = DateTime.now().add(_lockoutDuration);
-        setState(() =>
-            _errorMessage = 'Account locked for 20 minutes after $_maxAttempts failed attempts.');
+      if (!_shouldCountAsFailedAttempt(code)) {
+        if (!mounted) return;
+        setState(() => _errorMessage = _friendlyLoginError(code));
       } else {
-        final remaining = _maxAttempts - _failedAttempts;
-        setState(() => _errorMessage =
-            '${_friendlyLoginError(code)} ($remaining attempt${remaining == 1 ? "" : "s"} left)');
+        final state = await SecurityLockoutService.recordFailure(normalizedEmail);
+        if (!mounted) return;
+        if (state.locked) {
+          final message =
+              await SecurityLockoutService.lockMessage(normalizedEmail);
+          if (!mounted) return;
+          setState(() => _errorMessage = message);
+        } else {
+          final remaining = state.attemptsLeft;
+          setState(() => _errorMessage =
+              '${_friendlyLoginError(code)} ($remaining attempt${remaining == 1 ? "" : "s"} left before lockout)');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -192,6 +175,17 @@ class _LoginScreenState extends State<LoginScreen> {
         return 'Network issue detected. Check your connection.';
       default:
         return 'Login failed ($code). Please try again.';
+    }
+  }
+
+  bool _shouldCountAsFailedAttempt(String code) {
+    switch (code) {
+      case 'network-request-failed':
+      case 'internal-error':
+      case 'too-many-requests':
+        return false;
+      default:
+        return true;
     }
   }
 
@@ -418,49 +412,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   begin: 0.3,
                                   delay: const Duration(milliseconds: 200),
                                 ),
-                            const SizedBox(height: 16),
-
-                            // ── Go to Dashboard (Home) button ──────────────
-                            // This is the button requested: visible on the
-                            // login/onboarding screen, tapping it calls
-                            // widget.onLoginSuccess() which navigates to
-                            // AppShell (main dashboard) and clears the stack.
-                            // In production, wire this behind your actual auth
-                            // check. For demo/onboarding flow it works as-is.
-                            SizedBox(
-                              width: double.infinity,
-                              height: 54,
-                              child: OutlinedButton(
-                                onPressed: _isLoading
-                                    ? null
-                                    : widget.onLoginSuccess,
-                                style: AppTheme.glassOutlinedButtonStyle(
-                                  tintColor: const Color(0xFF3B82F6),
-                                  foregroundColor: const Color(0xFF3B82F6),
-                                  borderRadius: 12,
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.home_rounded,
-                                      color: Color(0xFF3B82F6),
-                                      size: 18,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Go to Dashboard',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF3B82F6),
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
