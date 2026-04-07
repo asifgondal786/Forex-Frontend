@@ -51,7 +51,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       icon: Icons.chat_bubble_rounded,
       label: 'AI Chat',
       description:
-          'Ask anything about Forex - raw, direct answers from Gemini AI.',
+          'Ask anything about Forex - raw, direct answers from AI.',
       color: Color(0xFF6C63FF),
       available: true,
     ),

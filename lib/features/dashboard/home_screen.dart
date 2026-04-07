@@ -1,4 +1,4 @@
-ï»¿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -139,9 +139,9 @@ class _NewsMarqueeState extends State<_NewsMarquee> {
     final scheme = Theme.of(context).colorScheme;
     final news = context.watch<NewsEventsProvider>();
     final List<String> items = news.articles.isNotEmpty
-        ? news.articles.take(10).map((a) => '${a.source} â€¢ ${a.headline}').toList()
-        : ['EUR/USD â€¢ Bullish momentum on H4', 'GBP/USD â€¢ BoE meeting in focus', 'USD/JPY â€¢ BOJ intervention risk elevated', 'XAU/USD â€¢ Safe haven demand rising', 'NFP Friday â€” high volatility expected'];
-    final text = '${items.join("     â—†     ")}     â—†     ${items.join("     â—†     ")}';
+        ? news.articles.take(10).map((a) => '${a.source} • ${a.headline}').toList()
+        : ['EUR/USD • Bullish momentum on H4', 'GBP/USD • BoE meeting in focus', 'USD/JPY • BOJ intervention risk elevated', 'XAU/USD • Safe haven demand rising', 'NFP Friday — high volatility expected'];
+    final text = '${items.join("     ?     ")}     ?     ${items.join("     ?     ")}';
     return Container(
       height: 32,
       decoration: BoxDecoration(
@@ -316,7 +316,7 @@ class _LiveRecentSignals extends StatelessWidget {
     final signals = provider.signals.take(3).toList();
     if (signals.isEmpty) {
       return Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-        child: Center(child: Text('No signals yet â€” backend offline', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.4), fontSize: 13))));
+        child: Center(child: Text('No signals yet — backend offline', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.4), fontSize: 13))));
     }
     return Column(children: signals.map((s) {
       final label = s.type == SignalType.buy ? 'BUY' : s.type == SignalType.sell ? 'SELL' : 'HOLD';
@@ -369,14 +369,14 @@ class _LiveAiPreviewCard extends StatelessWidget {
             const SizedBox(width: 8),
             Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-              child: Text('$pair â€¢ $label', style: const TextStyle(fontSize: 10, color: Colors.purple, fontWeight: FontWeight.w600))),
+              child: Text('$pair • $label', style: const TextStyle(fontSize: 10, color: Colors.purple, fontWeight: FontWeight.w600))),
           ]),
           const SizedBox(height: 4),
           Text(reason, maxLines: 3, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: scheme.onSurface.withValues(alpha: 0.8), height: 1.5)),
           const SizedBox(height: 10),
           MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/ai-chat'),
-            child: const Text('Get full analysis â†’', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.w600, fontSize: 13)),
+            child: const Text('Get full analysis ?', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.w600, fontSize: 13)),
           )),
         ])),
       ]),

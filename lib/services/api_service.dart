@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -19,9 +19,9 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  // /api/v1 — public market data, signals, risk, paper trading
+  // /api/v1 � public market data, signals, risk, paper trading
   static const String apiV1  = '/api/v1';
-  // /v1/api — authenticated endpoints (tasks, accounts, forex, advanced)
+  // /v1/api � authenticated endpoints (tasks, accounts, forex, advanced)
   static const String apiV1b = '/v1/api';
 
   // added new cosntant here
@@ -62,7 +62,7 @@ class ApiService {
     r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
   );
 
-  // â”€â”€ Base URL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Base URL ────────────────────────────────────────────────────────────────
 
   static String get baseUrl {
     final fromDefine = _baseUrlFromDefine.trim();
@@ -81,7 +81,7 @@ class ApiService {
 
   final http.Client _client = http.Client();
 
-  // â”€â”€ Static helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Static helpers ──────────────────────────────────────────────────────────
 
   static String _normalizeBaseUrl(String v) =>
       v.endsWith('/') ? v.substring(0, v.length - 1) : v;
@@ -251,7 +251,7 @@ static Future<bool> isHealthy() async {
     throw ApiException(message, response.statusCode);
   }
 
-  // â”€â”€ Fallback data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fallback data ───────────────────────────────────────────────────────────
 
   Map<String, double> _fallbackForexRates() => {
         'EUR/USD': 1.0834, 'GBP/USD': 1.2712, 'USD/JPY': 154.22,
@@ -798,7 +798,7 @@ static Future<bool> isHealthy() async {
   }
 
   // =========================================================================
-  // MARKET DATA ENDPOINTS  (/api/v1  â€” no auth required)
+  // MARKET DATA ENDPOINTS  (/api/v1  — no auth required)
   // =========================================================================
 
   /// Fetches live bid/ask/mid prices from /api/v1/market/prices.
@@ -830,14 +830,14 @@ static Future<bool> isHealthy() async {
       final uri = Uri.parse('$baseUrl$apiV1/market/prices').replace(
         queryParameters: {'pairs': backendPairs.join(',')},
       );
-      // Public endpoint â€” no auth header (matches fetchOHLCData pattern).
+      // Public endpoint — no auth header (matches fetchOHLCData pattern).
       final response = await _client.get(uri).timeout(_timeout);
       final data     = _handleResponse(response);
 
       if (data is Map<String, dynamic> && data['prices'] is List) {
         return (data['prices'] as List).cast<Map<String, dynamic>>();
       }
-      debugPrint('fetchMarketPrices: unexpected shape â€” ${data.runtimeType}');
+      debugPrint('fetchMarketPrices: unexpected shape — ${data.runtimeType}');
       return _fallbackMarketPrices(backendPairs);
     } catch (e) {
       debugPrint('fetchMarketPrices error: $e');
@@ -931,7 +931,7 @@ static Future<bool> isHealthy() async {
   }
 
   // =========================================================================
-  // FOREX DATA ENDPOINTS  (/v1/api â€” authenticated)
+  // FOREX DATA ENDPOINTS  (/v1/api — authenticated)
   // =========================================================================
 
   Future<Map<String, dynamic>> getForexRates({List<String>? pairs}) async {
@@ -1441,139 +1441,5 @@ static Future<bool> isHealthy() async {
 
   void dispose() => _client.close();
 
-  // ═══════════════════════════════════════════════════════════
-  // Phase 14 Patch C — AI endpoints
-  // ═══════════════════════════════════════════════════════════
-
-  Future<Map<String, dynamic>> aiChat(List<Map<String, dynamic>> messages,
-      {Map<String, dynamic>? userContext}) async {
-    return await _post('/api/v1/ai/chat', {
-      'messages': messages,
-      if (userContext != null) 'user_context': userContext,
-    });
-  }
-
-  Future<Map<String, dynamic>> aiAnalyzeMarket(
-    String pair, {
-    String timeframe = '1h',
-    bool includeNews = true,
-  }) async {
-    return await _post('/api/v1/ai/analyze', {
-      'pair': pair,
-      'timeframe': timeframe,
-      'include_news': includeNews,
-    });
-  }
-
-  Future<Map<String, dynamic>> aiGenerateSignal(
-    String pair, {
-    String timeframe = '1h',
-  }) async {
-    return await _post('/api/v1/ai/signal', {
-      'pair': pair,
-      'timeframe': timeframe,
-    });
-  }
-
-  Future<Map<String, dynamic>> aiRiskCheck({
-    required String pair,
-    required String direction,
-    required double entryPrice,
-    required double stopLoss,
-    required double takeProfit,
-    required double lotSize,
-    required double accountBalance,
-  }) async {
-    return await _post('/api/v1/ai/risk', {
-      'pair': pair,
-      'direction': direction,
-      'entry_price': entryPrice,
-      'stop_loss': stopLoss,
-      'take_profit': takeProfit,
-      'lot_size': lotSize,
-      'account_balance': accountBalance,
-    });
-  }
-
-  Future<Map<String, dynamic>> aiNewsImpact(
-    List<String> headlines,
-    String pair,
-  ) async {
-    return await _post('/api/v1/ai/news-impact', {
-      'headlines': headlines,
-      'pair': pair,
-    });
-  }
-
-  Future<Map<String, dynamic>> aiAutonomousBriefing({
-    List<String> pairs = const ['EUR/USD', 'GBP/USD', 'USD/JPY'],
-    String stage = 'monitoring',
-    String? userInstruction,
-  }) async {
-    return await _post('/api/v1/ai/briefing', {
-      'pairs': pairs,
-      'stage': stage,
-      if (userInstruction != null) 'user_instruction': userInstruction,
-    });
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // Phase 14 Patch C — Forex market data endpoints
-  // ═══════════════════════════════════════════════════════════
-
-  Future<Map<String, dynamic>> getForexRates([List<String>? pairs]) async {
-    final params = pairs != null ? '?pairs=${pairs.join(',')}' : '';
-    return await _get('/api/v1/market/rates$params');
-  }
-
-  Future<Map<String, dynamic>> getMarketSnapshot([List<String>? pairs]) async {
-    final params = pairs != null ? '?pairs=${pairs.join(',')}' : '';
-    return await _get('/api/v1/market/snapshot$params');
-  }
-
-  Future<Map<String, dynamic>> getOHLC(
-    String pair, {
-    String interval = '1h',
-    int outputsize = 100,
-  }) async {
-    return await _get(
-      '/api/v1/market/ohlc?pair=\${Uri.encodeComponent(pair)}'
-      '&interval=\$interval&outputsize=\$outputsize',
-    );
-  }
-
-  Future<Map<String, dynamic>> getForexNews(
-      {String? pair, int limit = 10}) async {
-    final pairParam = pair != null ? '&pair=\${Uri.encodeComponent(pair)}' : '';
-    return await _get('/api/v1/market/news?limit=\$limit\$pairParam');
-  }
-
-  Future<Map<String, dynamic>> getForexSentiment([String? pair]) async {
-    final pairParam = pair != null ? '?\pair=\${Uri.encodeComponent(pair)}' : '';
-    return await _get('/api/v1/market/sentiment\$pairParam');
-  }
-
-  Future<Map<String, dynamic>> getIndicators(
-    String pair, {
-    String indicator = 'rsi',
-    String interval = '1h',
-    int period = 14,
-  }) async {
-    return await _get(
-      '/api/v1/market/indicators?pair=\${Uri.encodeComponent(pair)}'
-      '&indicator=\$indicator&interval=\$interval&period=\$period',
-    );
-  }
-
-  Future<Map<String, dynamic>> getForexApiHealth() async {
-    return await _get('/api/v1/market/forex-health');
-  }
-
-  Future<Map<String, dynamic>> getAIHealth() async {
-    return await _get('/api/v1/ai/health');
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // End Patch C
-  // ═══════════════════════════════════════════════════════════
+  // -----------------------------------------------------------
 }

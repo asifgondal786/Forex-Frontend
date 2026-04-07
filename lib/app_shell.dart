@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'features/dashboard/home_screen.dart';
 import 'features/market_watch/market_watch_screen.dart';

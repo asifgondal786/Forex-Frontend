@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:forex_companion/config/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -9,7 +9,7 @@ import '../../core/widgets/app_background.dart';
 
 class LoginScreen extends StatefulWidget {
   /// Called by _AuthGate in main.dart after a successful sign-in.
-  /// The callback pushes AppShell and clears the navigation stack —
+  /// The callback pushes AppShell and clears the navigation stack �
   /// the login screen is never reachable via the back button after login.
   final VoidCallback onLoginSuccess;
 
@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ── Login handler ──────────────────────────────────────────────────────────
+  // -- Login handler ----------------------------------------------------------
 
   Future<void> _handleLogin() async {
     if (!_validateInputs()) return;
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user != null) {
         await SecurityLockoutService.resetOnSuccess(normalizedEmail);
         if (!mounted) return;
-        debugPrint('Login successful — navigating to dashboard');
+        debugPrint('Login successful � navigating to dashboard');
         widget.onLoginSuccess();
       } else {
         setState(() => _errorMessage = 'Unable to sign in. Please try again.');
@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ── Forgot password ────────────────────────────────────────────────────────
+  // -- Forgot password --------------------------------------------------------
 
   Future<void> _showForgotPasswordDialog() async {
     final message = await showDialog<String>(
@@ -130,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  // ── Validation helpers ─────────────────────────────────────────────────────
+  // -- Validation helpers -----------------------------------------------------
 
   bool _validateInputs() {
     final email = _normalizeEmail(_emailController.text);
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // -- Build ------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // ── Logo ────────────────────────────────────────────────
+                    // -- Logo ------------------------------------------------
                     Container(
                       width: isMobile ? 144 : 165,
                       height: isMobile ? 144 : 165,
@@ -237,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         .fadeIn(),
                     const SizedBox(height: 24),
 
-                    // ── App title ───────────────────────────────────────────
+                    // -- App title -------------------------------------------
                     Text(
                       'Forex Companion',
                       style: TextStyle(
@@ -267,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                     const SizedBox(height: 48),
 
-                    // ── Card ────────────────────────────────────────────────
+                    // -- Card ------------------------------------------------
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -422,7 +422,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 32),
 
-                    // ── Footer ──────────────────────────────────────────────
+                    // -- Footer ----------------------------------------------
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -458,7 +458,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ── Input widgets ──────────────────────────────────────────────────────────
+  // -- Input widgets ----------------------------------------------------------
 
   Widget _buildInputField({
     required TextEditingController controller,
@@ -580,9 +580,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 // Forgot password dialog
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 class _ForgotPasswordDialog extends StatefulWidget {
   final ApiService apiService;

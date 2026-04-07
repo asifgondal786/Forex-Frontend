@@ -7,7 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_background.dart';
 import '../../core/models/task.dart';
 import '../../providers/task_provider.dart';
-import '../../services/gemini_service.dart';
+
 
 class TaskCreationScreen extends StatefulWidget {
   const TaskCreationScreen({super.key});
@@ -20,7 +20,7 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final GeminiService _geminiService = GeminiService();
+  final ApiService _apiService = ApiService();
 
   TaskPriority _selectedPriority = TaskPriority.medium;
   bool _isLoading = false;
@@ -860,3 +860,4 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
     super.dispose();
   }
 }
+

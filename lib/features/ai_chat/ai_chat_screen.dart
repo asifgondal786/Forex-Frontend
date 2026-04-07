@@ -4,7 +4,7 @@ import 'dart:js_interop';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../services/gemini_service.dart';
+
 import '../../services/api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_background.dart';
@@ -33,7 +33,7 @@ class AiChatScreen extends StatefulWidget {
 
 class _AiChatScreenState extends State<AiChatScreen>
     with SingleTickerProviderStateMixin {
-  final GeminiService _geminiService = GeminiService();
+  final ApiService _apiService = ApiService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
@@ -343,7 +343,8 @@ class _AiChatScreenState extends State<AiChatScreen>
     if (override == null) _addMessage(message, isUser: true);
     setState(() => _isLoading = true);
     try {
-      final response = await _geminiService.sendMessage(message);
+      final result = await _apiService.aiChat([{'role': 'user', 'content': message}]);
+      final response = result['response'] ?? result['message'] ?? 'No response';
       _addMessage(response, isUser: false);
     } catch (e) {
       _addMessage('Sorry, I encountered an error: $e', isUser: false);
@@ -714,3 +715,4 @@ class ChatMessage {
     this.isCommand = false,
   });
 }
+
