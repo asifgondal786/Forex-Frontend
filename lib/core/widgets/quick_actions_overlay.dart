@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/quick_actions_provider.dart';
 
-// â”€â”€ colours (shared palette) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── colours (shared palette) ─────────────────────────────────────────────────
 // const _kBg      = Color(0xFF0A0E1A);
 const _kCard    = Color(0xFF161D2E);
 // const _kBorder  = Color(0xFF1E2A3D);
@@ -13,9 +13,9 @@ const _kSubtext = Color(0xFF64748B);
 
 /// Drop this widget at the top of any mode screen's scroll view.
 ///
-/// [modeKey]     â€” matches keys in _kActionsByMode (e.g. 'marketWatch')
-/// [onAction]    â€” callback with the action's routeOrAction string
-/// [accentColor] â€” tint colour for this mode's card border + icon ring
+/// [modeKey]     — matches keys in _kActionsByMode (e.g. 'marketWatch')
+/// [onAction]    — callback with the action's routeOrAction string
+/// [accentColor] — tint colour for this mode's card border + icon ring
 class QuickActionsOverlay extends StatefulWidget {
   const QuickActionsOverlay({
     super.key,
@@ -93,7 +93,7 @@ class _QuickActionsOverlayState extends State<QuickActionsOverlay>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // ── Header ─────────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(14, 12, 10, 0),
                     child: Row(children: [
@@ -126,7 +126,7 @@ class _QuickActionsOverlayState extends State<QuickActionsOverlay>
                       ),
                     ]),
                   ),
-                  // â”€â”€ Action cards row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // ── Action cards row ────────────────────────────────
                   SizedBox(
                     height: 100,
                     child: ListView.builder(
@@ -140,7 +140,7 @@ class _QuickActionsOverlayState extends State<QuickActionsOverlay>
                       ),
                     ),
                   ),
-                  // â”€â”€ Hint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // ── Hint ────────────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
                     child: Row(children: [
@@ -148,7 +148,7 @@ class _QuickActionsOverlayState extends State<QuickActionsOverlay>
                           color: _kSubtext, size: 10),
                       const SizedBox(width: 4),
                       Text(
-                        'Tap a card to jump straight in  â€¢  Ã— to hide',
+                        'Tap a card to jump straight in  •  × to hide',
                         style: const TextStyle(
                             color: _kSubtext, fontSize: 9),
                       ),
@@ -164,9 +164,9 @@ class _QuickActionsOverlayState extends State<QuickActionsOverlay>
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Individual action card
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 class _ActionCard extends StatefulWidget {
   const _ActionCard({
     required this.action,
@@ -213,31 +213,28 @@ class _ActionCardState extends State<_ActionCard>
         child: Container(
           width: 130,
           margin: const EdgeInsets.only(right: 8),
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: widget.accentColor.withValues(alpha: 0.07),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
                 color: widget.accentColor.withValues(alpha: 0.2)),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: ClipRect(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
               // emoji icon in a ring
               Container(
-                width: 28,
-                height: 28,
+                width: 24,
+                height: 24,
                 decoration: BoxDecoration(
                   color: widget.accentColor.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(widget.action.icon,
-                      style: const TextStyle(fontSize: 14)),
+                      style: const TextStyle(fontSize: 12)),
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 widget.action.label,
                 maxLines: 1,
@@ -248,7 +245,7 @@ class _ActionCardState extends State<_ActionCard>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 widget.action.subtitle,
                 maxLines: 2,
@@ -260,7 +257,7 @@ class _ActionCardState extends State<_ActionCard>
                 ),
               ),
             ],
-          ),
+          )),
         ),
       ),
     );

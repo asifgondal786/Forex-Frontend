@@ -1,4 +1,4 @@
-ï»¿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -110,11 +110,11 @@ class _NewsMarqueeState extends State<_NewsMarquee> {
   final _ctrl = ScrollController();
   Timer? _timer;
   static const _fallback = [
-    'EUR/USD â€¢ Bullish momentum on H4 continues',
-    'GBP/USD â€¢ BoE policy meeting in focus this week',
-    'USD/JPY â€¢ BOJ intervention risk elevated near 155',
-    'XAU/USD â€¢ Safe haven demand rising amid uncertainty',
-    'NFP data due Friday â€” expect high volatility',
+    'EUR/USD • Bullish momentum on H4 continues',
+    'GBP/USD • BoE policy meeting in focus this week',
+    'USD/JPY • BOJ intervention risk elevated near 155',
+    'XAU/USD • Safe haven demand rising amid uncertainty',
+    'NFP data due Friday — expect high volatility',
   ];
   @override
   void initState() {
@@ -136,9 +136,9 @@ class _NewsMarqueeState extends State<_NewsMarquee> {
     final scheme = Theme.of(context).colorScheme;
     final articles = context.watch<NewsEventsProvider>().articles;
     final items = articles.isNotEmpty
-        ? articles.take(10).map((a) => ' â€¢ ').toList()
+        ? articles.take(10).map((a) => ' • ').toList()
         : _fallback;
-    final sep = '     â—†     ';
+    final sep = '     ?     ';
     final text = '';
     return Container(
       height: 32,
@@ -206,19 +206,19 @@ class _LiveBalanceCard extends StatelessWidget {
           _Pill(label: 'Paper Trading'),
         ]),
         const SizedBox(height: 8),
-        Text('\clear{equity.toStringAsFixed(2)}',
+        Text('\$\{equity.toStringAsFixed(2)}',
             style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1)),
         const SizedBox(height: 6),
         Row(children: [
           Icon(isPos ? Icons.arrow_upward : Icons.arrow_downward,
               color: isPos ? Colors.greenAccent : Colors.redAccent, size: 14),
           const SizedBox(width: 4),
-          Text('\clear{stats.totalPnl.toStringAsFixed(2)} (%)',
+          Text('\$\{stats.totalPnl.toStringAsFixed(2)} (%)',
               style: TextStyle(color: isPos ? Colors.greenAccent : Colors.redAccent, fontWeight: FontWeight.w600, fontSize: 13)),
         ]),
         const SizedBox(height: 16),
         Row(children: [
-          _BalanceStat('Open P&L', '\clear{openPnl.toStringAsFixed(2)}',
+          _BalanceStat('Open P&L', '\$\{openPnl.toStringAsFixed(2)}',
               openPnl >= 0 ? Colors.greenAccent : Colors.redAccent),
           const SizedBox(width: 20),
           _BalanceStat('Win Rate', '%', Colors.white),
@@ -374,7 +374,7 @@ class _LiveRecentSignals extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-        child: Center(child: Text('No signals yet â€” refreshing...',
+        child: Center(child: Text('No signals yet — refreshing...',
             style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.4), fontSize: 13))),
       );
     }
@@ -448,7 +448,7 @@ class _LiveAiPreviewCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-              child: Text('$pair â€¢ $label', style: const TextStyle(fontSize: 10, color: Colors.purple, fontWeight: FontWeight.w600)),
+              child: Text('$pair • $label', style: const TextStyle(fontSize: 10, color: Colors.purple, fontWeight: FontWeight.w600)),
             ),
           ]),
           const SizedBox(height: 4),
@@ -457,7 +457,7 @@ class _LiveAiPreviewCard extends StatelessWidget {
           const SizedBox(height: 10),
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/ai-chat'),
-            child: const Text('Get full analysis â†’',
+            child: const Text('Get full analysis ?',
                 style: TextStyle(color: Colors.purple, fontWeight: FontWeight.w600, fontSize: 13)),
           ),
         ])),
