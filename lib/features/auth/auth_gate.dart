@@ -11,7 +11,7 @@ import '../../providers/task_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/header_provider.dart';
 import '../../providers/mode_provider.dart';
-import 'login_screen.dart';
+import 'package:forex_companion/features/auth/login_screen.dart';
 import 'verification_screen.dart';
 
 class AuthGate extends StatefulWidget {

@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 
 $defaultApiBaseUrl = "http://140.245.33.196"
 $defaultAppWebUrl = "https://forexcompanion-e5a28.web.app"
-$defaultWsBaseUrl = "wss://forex-backend-production-bc44.up.railway.app"
+$defaultWsBaseUrl = "ws://140.245.33.196:8000"
 
 function Resolve-Value {
   param(

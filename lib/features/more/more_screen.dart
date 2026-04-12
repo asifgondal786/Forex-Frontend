@@ -10,7 +10,7 @@ import '../automation/automation_screen.dart';
 import '../social/social_screen.dart';
 import '../settings/settings_screen.dart';
 import '../risk/risk_simulator_screen.dart';
-import '../../features/auth/login_screen.dart';
+import 'package:forex_companion/features/auth/login_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});

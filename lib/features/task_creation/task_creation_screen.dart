@@ -1,3 +1,4 @@
+import 'package:forex_companion/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:forex_companion/config/theme.dart';
@@ -27,6 +28,7 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
   bool _isAiEnhancing = false;
   Map<String, dynamic>? _aiSuggestion;
 
+  // ALTERATIONS HAVE BEEN MADE TO THIS FILE. PLEASE REVIEW THE CHANGES CAREFULLY.
   Future<void> _getAiSuggestion() async {
     if (_titleController.text.trim().isEmpty) {
       if (mounted) {
@@ -38,22 +40,28 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
     setState(() => _isAiEnhancing = true);
 
     try {
-      final raw = await _geminiService
-    .sendMessage(
-      'Suggest a Forex trading task for: ${_titleController.text.trim()}. '
-      'Reply ONLY with valid JSON like: '
-      '{"description":"...","priority":"high|medium|low"}',
-    );
+      final result = await _apiService.aiChat([
+        {
+          'role': 'user',
+          'content':
+              'Suggest a Forex trading task for: ${_titleController.text.trim()}. '
+              'Reply ONLY with valid JSON like: '
+              '{"description":"...","priority":"high|medium|low"}',
+        }
+      ]);
 
-    Map<String, dynamic> suggestion = {};
-    try {
-      final jsonStr = raw.contains('{')
-      ? raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1)
-      : '{}';
-      suggestion = Map<String, dynamic>.from(
-    jsonStr.isNotEmpty ? (json.decode(jsonStr) as Map) : {},
-  );
-} catch (_) {}
+      final raw = result['response']?.toString() ?? '{}';
+
+      Map<String, dynamic> suggestion = {};
+      try {
+        final jsonStr = raw.contains('{')
+            ? raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1)
+            : '{}';
+        suggestion = Map<String, dynamic>.from(
+          jsonStr.isNotEmpty ? (json.decode(jsonStr) as Map) : {},
+        );
+      } catch (_) {}
+
 
   if (mounted) {
     setState(() {

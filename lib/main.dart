@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 // ── Shell & Auth ──────────────────────────────────────────────────────────────
 import 'app_shell.dart';
-import 'features/auth/login_screen.dart';
+import 'package:forex_companion/features/auth/login_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'routes/app_routes.dart';
 

@@ -1,4 +1,4 @@
-import 'dart:async';
+ï»¿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +10,6 @@ import '../../providers/app_shell_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -35,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: scheme.surface,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(scheme, context),
+          _HomeAppBar(scheme: scheme),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             sliver: SliverList(
@@ -67,35 +66,38 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  SliverAppBar _buildAppBar(ColorScheme scheme, BuildContext context) {
-    return SliverAppBar(
-      floating: true,
-      backgroundColor: scheme.surface,
-      title: Row(children: [
-        Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [scheme.primary, scheme.primaryContainer]),
-            borderRadius: BorderRadius.circular(8),
+class _HomeAppBar extends StatelessWidget {
+  final ColorScheme scheme;
+  const _HomeAppBar({required this.scheme});
+  @override
+  Widget build(BuildContext context) => SliverAppBar(
+        floating: true,
+        backgroundColor: scheme.surface,
+        title: Row(children: [
+          Container(
+            width: 32, height: 32,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [scheme.primary, scheme.primaryContainer]),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.currency_exchange, color: Colors.white, size: 18),
           ),
-          child: const Icon(Icons.currency_exchange, color: Colors.white, size: 18),
-        ),
-        const SizedBox(width: 10),
-        Text('Tajir', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: scheme.onSurface)),
-      ]),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.notifications_outlined, color: scheme.onSurface),
-          onPressed: () => context.read<AppShellProvider>().setTab(4),
-        ),
-        IconButton(
-          icon: Icon(Icons.person_outline_rounded, color: scheme.onSurface),
-          onPressed: () => Navigator.pushNamed(context, '/profile'),
-        ),
-      ],
-    );
-  }
+          const SizedBox(width: 10),
+          Text('Tajir', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: scheme.onSurface)),
+        ]),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: scheme.onSurface),
+            onPressed: () => context.read<AppShellProvider>().setTab(4),
+          ),
+          IconButton(
+            icon: Icon(Icons.person_outline_rounded, color: scheme.onSurface),
+            onPressed: () => Navigator.pushNamed(context, '/profile'),
+          ),
+        ],
+      );
 }
 
 class _NewsMarquee extends StatefulWidget {
@@ -105,43 +107,39 @@ class _NewsMarquee extends StatefulWidget {
 }
 
 class _NewsMarqueeState extends State<_NewsMarquee> {
-  final ScrollController _ctrl = ScrollController();
+  final _ctrl = ScrollController();
   Timer? _timer;
-
+  static const _fallback = [
+    'EUR/USD â€¢ Bullish momentum on H4 continues',
+    'GBP/USD â€¢ BoE policy meeting in focus this week',
+    'USD/JPY â€¢ BOJ intervention risk elevated near 155',
+    'XAU/USD â€¢ Safe haven demand rising amid uncertainty',
+    'NFP data due Friday â€” expect high volatility',
+  ];
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startScroll());
   }
-
-  void _start() {
+  void _startScroll() {
     _timer = Timer.periodic(const Duration(milliseconds: 30), (_) {
       if (!_ctrl.hasClients) return;
       final max = _ctrl.position.maxScrollExtent;
       if (max <= 0) return;
-      if (_ctrl.offset >= max) {
-        _ctrl.jumpTo(0);
-      } else {
-        _ctrl.jumpTo(_ctrl.offset + 1.5);
-      }
+      _ctrl.offset >= max ? _ctrl.jumpTo(0) : _ctrl.jumpTo(_ctrl.offset + 1.5);
     });
   }
-
   @override
-  void dispose() {
-    _timer?.cancel();
-    _ctrl.dispose();
-    super.dispose();
-  }
-
+  void dispose() { _timer?.cancel(); _ctrl.dispose(); super.dispose(); }
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final news = context.watch<NewsEventsProvider>();
-    final List<String> items = news.articles.isNotEmpty
-        ? news.articles.take(10).map((a) => '${a.source} • ${a.headline}').toList()
-        : ['EUR/USD • Bullish momentum on H4', 'GBP/USD • BoE meeting in focus', 'USD/JPY • BOJ intervention risk elevated', 'XAU/USD • Safe haven demand rising', 'NFP Friday — high volatility expected'];
-    final text = '${items.join("     ?     ")}     ?     ${items.join("     ?     ")}';
+    final articles = context.watch<NewsEventsProvider>().articles;
+    final items = articles.isNotEmpty
+        ? articles.take(10).map((a) => ' â€¢ ').toList()
+        : _fallback;
+    final sep = '     â—†     ';
+    final text = '';
     return Container(
       height: 32,
       decoration: BoxDecoration(
@@ -154,19 +152,24 @@ class _NewsMarqueeState extends State<_NewsMarquee> {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: scheme.primary,
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(7), bottomLeft: Radius.circular(7)),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(7), bottomLeft: Radius.circular(7)),
           ),
-          child: const Center(child: Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5))),
+          child: const Center(child: Text('LIVE',
+              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5))),
         ),
         Expanded(
           child: ListView(
             controller: _ctrl,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
-            children: [Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Center(child: Text(text, style: TextStyle(fontSize: 12, color: scheme.onSurface.withValues(alpha: 0.8), fontWeight: FontWeight.w500))),
-            )],
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Center(child: Text(text,
+                    style: TextStyle(fontSize: 12, color: scheme.onSurface.withValues(alpha: 0.8), fontWeight: FontWeight.w500))),
+              ),
+            ],
           ),
         ),
       ]),
@@ -181,57 +184,76 @@ class _LiveBalanceCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final paper = context.watch<PaperTradingProvider>();
     final stats = paper.stats;
-    final equity = 10000.0 + stats.totalPnl;
+    const startingBalance = 10000.0;
+    final equity = startingBalance + stats.totalPnl;
     final isPos = stats.totalPnl >= 0;
-    final pnlPct = stats.totalPnl / 10000 * 100;
+    final pnlPct = stats.totalPnl / startingBalance * 100;
     final openPnl = paper.totalUnrealizedPnl;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [scheme.primary, scheme.primary.withValues(alpha: 0.7)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+          colors: [scheme.primary, scheme.primary.withValues(alpha: 0.7)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [BoxShadow(color: scheme.primary.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 10))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text('Account Balance', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13, fontWeight: FontWeight.w500)),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
-            child: const Row(children: [Icon(Icons.circle, size: 6, color: Colors.greenAccent), SizedBox(width: 5), Text('Paper Trading', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600))]),
-          ),
+          _Pill(label: 'Paper Trading'),
         ]),
         const SizedBox(height: 8),
-        Text('\$${equity.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1)),
+        Text('\clear{equity.toStringAsFixed(2)}',
+            style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1)),
         const SizedBox(height: 6),
         Row(children: [
-          Icon(isPos ? Icons.arrow_upward : Icons.arrow_downward, color: isPos ? Colors.greenAccent : Colors.redAccent, size: 14),
+          Icon(isPos ? Icons.arrow_upward : Icons.arrow_downward,
+              color: isPos ? Colors.greenAccent : Colors.redAccent, size: 14),
           const SizedBox(width: 4),
-          Text('${isPos ? "+" : ""}\$${stats.totalPnl.toStringAsFixed(2)} (${pnlPct.toStringAsFixed(2)}%)',
+          Text('\clear{stats.totalPnl.toStringAsFixed(2)} (%)',
               style: TextStyle(color: isPos ? Colors.greenAccent : Colors.redAccent, fontWeight: FontWeight.w600, fontSize: 13)),
         ]),
         const SizedBox(height: 16),
         Row(children: [
-          _Stat('Open P&L', '${openPnl >= 0 ? "+" : ""}\$${openPnl.toStringAsFixed(2)}', openPnl >= 0 ? Colors.greenAccent : Colors.redAccent),
+          _BalanceStat('Open P&L', '\clear{openPnl.toStringAsFixed(2)}',
+              openPnl >= 0 ? Colors.greenAccent : Colors.redAccent),
           const SizedBox(width: 20),
-          _Stat('Win Rate', '${(stats.winRate * 100).toStringAsFixed(1)}%', Colors.white),
+          _BalanceStat('Win Rate', '%', Colors.white),
           const SizedBox(width: 20),
-          _Stat('Trades', '${stats.totalTrades}', Colors.white),
+          _BalanceStat('Trades', '', Colors.white),
         ]),
       ]),
     );
   }
 }
 
-class _Stat extends StatelessWidget {
-  final String label; final String value; final Color color;
-  const _Stat(this.label, this.value, this.color);
+class _Pill extends StatelessWidget {
+  final String label;
+  const _Pill({required this.label});
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
+        child: Row(children: [
+          const Icon(Icons.circle, size: 6, color: Colors.greenAccent),
+          const SizedBox(width: 5),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+        ]),
+      );
+}
+
+class _BalanceStat extends StatelessWidget {
+  final String label, value;
+  final Color color;
+  const _BalanceStat(this.label, this.value, this.color);
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
-    Text(value, style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w700)),
-  ]);
+        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
+        Text(value, style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w700)),
+      ]);
 }
 
 class _QuickActionsRow extends StatelessWidget {
@@ -245,62 +267,95 @@ class _QuickActionsRow extends StatelessWidget {
       (Icons.bar_chart_rounded, 'Charts', Colors.blue, () => Navigator.pushNamed(context, '/charts')),
       (Icons.account_balance_wallet_rounded, 'Portfolio', Colors.orange, () => shell.setTab(3)),
     ];
-    return Row(children: List.generate(actions.length, (i) {
-      final (icon, label, color, onTap) = actions[i];
-      return Expanded(child: Padding(
-        padding: EdgeInsets.only(right: i < actions.length - 1 ? 8 : 0),
-        child: MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: onTap, child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14), border: Border.all(color: color.withValues(alpha: 0.2))),
-          child: Column(children: [Icon(icon, color: color, size: 22), const SizedBox(height: 6), Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color))]),
-        ))),
-      ));
-    }));
+    return Row(
+      children: List.generate(actions.length, (i) {
+        final (icon, label, color, onTap) = actions[i];
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: i < actions.length - 1 ? 8 : 0),
+            child: GestureDetector(
+              onTap: onTap,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: color.withValues(alpha: 0.2)),
+                ),
+                child: Column(children: [
+                  Icon(icon, color: color, size: 22),
+                  const SizedBox(height: 6),
+                  Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+                ]),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
   }
 }
 
 class _LiveMarketSnapshot extends StatelessWidget {
   const _LiveMarketSnapshot();
+  static const _fallbackItems = [
+    ('EUR/USD', '1.08432', '+0.12%', true),
+    ('GBP/JPY', '191.234', '-0.34%', false),
+    ('XAU/USD', '2341.5', '+0.87%', true),
+  ];
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final mw = context.watch<MarketWatchProvider>();
     if (mw.isLoading && mw.quotes.isEmpty) {
-      return SizedBox(height: 72, child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: scheme.primary)));
+      return SizedBox(height: 72,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: scheme.primary)));
     }
     final top = mw.quotes.take(3).toList();
     if (top.isEmpty) {
-      final items = [('EUR/USD','1.08432','+0.12%',true),('GBP/JPY','191.234','-0.34%',false),('XAU/USD','2341.5','+0.87%',true)];
-      return Row(children: List.generate(items.length, (i) {
-        final (pair, price, change, isPos) = items[i];
-        return Expanded(child: Padding(padding: EdgeInsets.only(right: i < items.length-1 ? 8:0), child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(pair, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: scheme.onSurface.withValues(alpha: 0.6))),
-            const SizedBox(height: 4),
-            Text(price, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: scheme.onSurface)),
-            const SizedBox(height: 2),
-            Text(change, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPos ? Colors.green : Colors.red)),
-          ]),
-        )));
+      return Row(children: List.generate(_fallbackItems.length, (i) {
+        final (pair, price, change, isPos) = _fallbackItems[i];
+        return Expanded(child: Padding(
+          padding: EdgeInsets.only(right: i < _fallbackItems.length - 1 ? 8 : 0),
+          child: _MarketTile(pair: pair, price: price, change: change, isPos: isPos),
+        ));
       }));
     }
     return Row(children: List.generate(top.length, (i) {
       final q = top[i];
       final isPos = q.changePercent >= 0;
-      return Expanded(child: Padding(padding: EdgeInsets.only(right: i < top.length-1 ? 8:0), child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(q.symbol, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: scheme.onSurface.withValues(alpha: 0.6))),
-          const SizedBox(height: 4),
-          Text(q.mid.toStringAsFixed(q.symbol.contains('JPY') ? 3 : 5), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: scheme.onSurface)),
-          const SizedBox(height: 2),
-          Text('${isPos?"+":""}${q.changePercent.toStringAsFixed(2)}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPos ? Colors.green : Colors.red)),
-        ]),
-      )));
+      final digits = q.symbol.contains('JPY') ? 3 : 5;
+      return Expanded(child: Padding(
+        padding: EdgeInsets.only(right: i < top.length - 1 ? 8 : 0),
+        child: _MarketTile(
+          pair: q.symbol,
+          price: q.mid.toStringAsFixed(digits),
+          change: '%',
+          isPos: isPos,
+        ),
+      ));
     }));
+  }
+}
+
+class _MarketTile extends StatelessWidget {
+  final String pair, price, change;
+  final bool isPos;
+  const _MarketTile({required this.pair, required this.price, required this.change, required this.isPos});
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(pair, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: scheme.onSurface.withValues(alpha: 0.6))),
+        const SizedBox(height: 4),
+        Text(price, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: scheme.onSurface)),
+        const SizedBox(height: 2),
+        Text(change, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isPos ? Colors.green : Colors.red)),
+      ]),
+    );
   }
 }
 
@@ -311,30 +366,45 @@ class _LiveRecentSignals extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final provider = context.watch<TradeSignalsProvider>();
     if (provider.isLoading && !provider.hasSignals) {
-      return SizedBox(height: 80, child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: scheme.primary)));
+      return SizedBox(height: 80,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: scheme.primary)));
     }
     final signals = provider.signals.take(3).toList();
     if (signals.isEmpty) {
-      return Container(padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-        child: Center(child: Text('No signals yet — backend offline', style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.4), fontSize: 13))));
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+        child: Center(child: Text('No signals yet â€” refreshing...',
+            style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.4), fontSize: 13))),
+      );
     }
     return Column(children: signals.map((s) {
-      final label = s.type == SignalType.buy ? 'BUY' : s.type == SignalType.sell ? 'SELL' : 'HOLD';
-      final color = s.type == SignalType.buy ? Colors.green : s.type == SignalType.sell ? Colors.red : Colors.orange;
-      return Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(14),
+      final (label, color) = switch (s.type) {
+        SignalType.buy => ('BUY', Colors.green),
+        SignalType.sell => ('SELL', Colors.red),
+        SignalType.hold => ('HOLD', Colors.orange),
+      };
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
         child: Row(children: [
-          Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-            child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 12))),
+            child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w800, fontSize: 12)),
+          ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(s.symbol, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            Text(s.explanation, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: scheme.onSurface.withValues(alpha: 0.5))),
+            Text(s.explanation, maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: scheme.onSurface.withValues(alpha: 0.5))),
           ])),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text('${s.confidence}%', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12))),
+            child: Text('%', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12)),
+          ),
         ]),
       );
     }).toList());
@@ -347,10 +417,15 @@ class _LiveAiPreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final provider = context.watch<TradeSignalsProvider>();
-    TradeSignal? top;
-    if (provider.hasSignals) top = provider.signals.reduce((a, b) => a.confidence >= b.confidence ? a : b);
+    final top = provider.hasSignals
+        ? provider.signals.reduce((a, b) => a.confidence >= b.confidence ? a : b)
+        : null;
     final pair = top?.symbol ?? 'EUR/USD';
-    final label = top == null ? 'BUY' : (top.type == SignalType.buy ? 'BUY' : top.type == SignalType.sell ? 'SELL' : 'HOLD');
+    final label = top == null ? 'BUY' : switch (top.type) {
+      SignalType.buy => 'BUY',
+      SignalType.sell => 'SELL',
+      SignalType.hold => 'HOLD',
+    };
     final reason = top?.explanation ?? 'EUR/USD shows a high-probability bullish continuation. London session breakout above 1.0850 is the key level to watch.';
     return Container(
       padding: const EdgeInsets.all(16),
@@ -360,24 +435,31 @@ class _LiveAiPreviewCard extends StatelessWidget {
         border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.15), shape: BoxShape.circle),
-          child: const Icon(Icons.auto_awesome_rounded, color: Colors.purple, size: 18)),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.15), shape: BoxShape.circle),
+          child: const Icon(Icons.auto_awesome_rounded, color: Colors.purple, size: 18),
+        ),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             const Text('AI Copilot', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.purple)),
             const SizedBox(width: 8),
-            Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(color: Colors.purple.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-              child: Text('$pair • $label', style: const TextStyle(fontSize: 10, color: Colors.purple, fontWeight: FontWeight.w600))),
+              child: Text('$pair â€¢ $label', style: const TextStyle(fontSize: 10, color: Colors.purple, fontWeight: FontWeight.w600)),
+            ),
           ]),
           const SizedBox(height: 4),
-          Text(reason, maxLines: 3, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: scheme.onSurface.withValues(alpha: 0.8), height: 1.5)),
+          Text(reason, maxLines: 3, overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 13, color: scheme.onSurface.withValues(alpha: 0.8), height: 1.5)),
           const SizedBox(height: 10),
-          MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(
+          GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/ai-chat'),
-            child: const Text('Get full analysis ?', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.w600, fontSize: 13)),
-          )),
+            child: const Text('Get full analysis â†’',
+                style: TextStyle(color: Colors.purple, fontWeight: FontWeight.w600, fontSize: 13)),
+          ),
         ])),
       ]),
     );
@@ -385,12 +467,20 @@ class _LiveAiPreviewCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  final String title; final ColorScheme scheme; final VoidCallback? onSeeAll;
+  final String title;
+  final ColorScheme scheme;
+  final VoidCallback? onSeeAll;
   const _SectionHeader(this.title, this.scheme, {this.onSeeAll});
   @override
-  Widget build(BuildContext context) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-    Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: scheme.onSurface)),
-    if (onSeeAll != null) MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: onSeeAll,
-      child: Text('See all', style: TextStyle(fontSize: 13, color: scheme.primary, fontWeight: FontWeight.w600)))),
-  ]);
+  Widget build(BuildContext context) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: scheme.onSurface)),
+          if (onSeeAll != null)
+            GestureDetector(
+              onTap: onSeeAll,
+              child: Text('See all', style: TextStyle(fontSize: 13, color: scheme.primary, fontWeight: FontWeight.w600)),
+            ),
+        ],
+      );
 }

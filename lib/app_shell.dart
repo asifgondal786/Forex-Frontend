@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'features/dashboard/home_screen.dart';
+import 'package:forex_companion/features/dashboard/home_screen.dart';
 import 'features/market_watch/market_watch_screen.dart';
 import 'features/trade_signals/trade_signals_screen.dart';
 import 'features/portfolio/portfolio_screen.dart';
@@ -14,7 +14,7 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 class _AppShellState extends State<AppShell> {
-  static const _screens = [
+  static final _screens = [
     HomeScreen(),
     MarketWatchScreen(),
     TradeSignalsScreen(),

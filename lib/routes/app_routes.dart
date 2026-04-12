@@ -6,7 +6,7 @@ import '../app_shell.dart';
 import 'package:forex_companion/features/admin/user_admin_dashboard_screen.dart';
 import '../features/ai_chat/ai_chat_screen.dart';
 import '../features/auth/auth_entry_screen.dart';
-import '../features/auth/login_screen.dart';
+import 'package:forex_companion/features/auth/login_screen.dart';
 import '../features/auth/password_reset_screen.dart';
 import '../features/auth/signup_screen.dart';
 import '../features/auth/verification_screen.dart';

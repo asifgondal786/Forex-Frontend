@@ -1,4 +1,4 @@
-import 'dart:async';
+ï»¿import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -19,9 +19,9 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  // /api/v1 — public market data, signals, risk, paper trading
+  // /api/v1   public market data, signals, risk, paper trading
   static const String apiV1  = '/api/v1';
-  // /v1/api — authenticated endpoints (tasks, accounts, forex, advanced)
+  // /v1/api   authenticated endpoints (tasks, accounts, forex, advanced)
   static const String apiV1b = '/v1/api';
 
   // added new cosntant here
@@ -1345,6 +1345,37 @@ static Future<bool> isHealthy() async {
       return {'intent': 'CHAT', 'confidence': 0.0, 'response': null};
     }
   }
+
+//ADDED AICHAT HERE
+Future<Map<String, dynamic>> aiChat(
+  List<Map<String, dynamic>> messages, {
+  String? pair,
+  Map<String, dynamic>? context,
+}) async {
+  try {
+    final headers = await _buildHeaders();
+    final body = <String, dynamic>{
+      'messages': messages,
+      if (pair?.trim().isNotEmpty == true) 'pair': pair!.trim().toUpperCase(),
+      if (context != null) 'context': context,
+    };
+    final response = await _client
+        .post(
+          Uri.parse('$baseUrl$apiV1b/advanced/nlp/chat'),
+          headers: headers,
+          body: json.encode(body),
+        )
+        .timeout(_authTimeout);
+    return _handleResponse(response);
+  } catch (e) {
+    debugPrint('aiChat error: $e');
+    return {
+      'success': false,
+      'response': 'AI chat is temporarily unavailable. Please try again shortly.',
+      'error': e.toString(),
+    };
+  }
+}
 
   // =========================================================================
   // PAPER TRADING ENDPOINTS
