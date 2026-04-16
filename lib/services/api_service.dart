@@ -1328,6 +1328,8 @@ static Future<bool> isHealthy() async {
   // =========================================================================
   // NLP VOICE COPILOT (Phase 7)
   // =========================================================================
+  // NLP VOICE COPILOT (Phase 7)
+  // =========================================================================
 
   Future<Map<String, dynamic>> parseNLPCommand({
     required String text,
@@ -1343,6 +1345,36 @@ static Future<bool> isHealthy() async {
     } catch (e) {
       debugPrint('NLP parse error: $e');
       return {'intent': 'CHAT', 'confidence': 0.0, 'response': null};
+    }
+  }
+
+  Future<Map<String, dynamic>> aiChat(
+    List<Map<String, dynamic>> messages, {
+    String? pair,
+    Map<String, dynamic>? context,
+  }) async {
+    try {
+      final headers = await _buildHeaders();
+      final body = <String, dynamic>{
+        'messages': messages,
+        if (pair?.trim().isNotEmpty == true) 'pair': pair!.trim().toUpperCase(),
+        if (context != null) 'context': context,
+      };
+      final response = await _client
+          .post(
+            Uri.parse('$baseUrl$apiV1b/advanced/nlp/chat'),
+            headers: headers,
+            body: json.encode(body),
+          )
+          .timeout(_authTimeout);
+      return _handleResponse(response);
+    } catch (e) {
+      debugPrint('aiChat error: $e');
+      return {
+        'success': false,
+        'response': 'AI chat is temporarily unavailable. Please try again shortly.',
+        'error': e.toString(),
+      };
     }
   }
 

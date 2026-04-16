@@ -247,11 +247,6 @@ class TradeSignalsProvider extends ChangeNotifier {
         _error = e.toString();
         if (kDebugMode) debugPrint('TradeSignalsProvider API error: $e');
       }
-    } catch (e) {
-      if (!_disposed) {
-        _error = 'Failed to load signals';
-        if (kDebugMode) debugPrint('TradeSignalsProvider error: $e');
-      }
     } finally {
       if (!_disposed) {
         _isLoading = false;

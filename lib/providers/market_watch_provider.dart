@@ -264,11 +264,6 @@ class MarketWatchProvider extends ChangeNotifier {
       _error = null;
     } catch (e) {
       if (!_disposed) _error = e.toString();
-    } catch (e) {
-      if (!_disposed) {
-        _error = 'Connection error';
-        if (kDebugMode) debugPrint('MarketWatchProvider._fetch: $e');
-      }
     } finally {
       if (!_disposed) {
         _loading = false;
