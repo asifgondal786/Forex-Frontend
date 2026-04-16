@@ -335,3 +335,4 @@ class _TradeConfirmationSheetState extends State<TradeConfirmationSheet> {
     );
   }
 }
+

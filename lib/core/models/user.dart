@@ -102,3 +102,4 @@ UserPlan _parsePlan(dynamic value) {
   }
   return UserPlan.free;
 }
+

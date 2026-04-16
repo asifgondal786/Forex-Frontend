@@ -235,3 +235,4 @@ class ExecutedTradeSnapshot {
     required this.openedAt,
   });
 }
+

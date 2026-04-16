@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'api_service.dart';
+import '../services/api_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
@@ -75,3 +75,4 @@ class NotificationService {
     debugPrint('[FCM] Tapped: $eventType');
   }
 }
+

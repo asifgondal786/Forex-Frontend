@@ -1,245 +1,198 @@
+﻿// lib/providers/automation_provider.dart
+//
+// Manages agent mode state, kill-switch, and today's trading stats.
+// Calls ApiService for all backend interactions.
+
 import 'package:flutter/foundation.dart';
+import '../services/api_service.dart';
 
-// ─── Models ───────────────────────────────────────────────────────────────────
+class AutomationProvider with ChangeNotifier {
+  // ── Mode state ──────────────────────────────────────────────────────────
+  bool _semiEnabled  = false;
+  bool _fullyEnabled = false;
 
-enum AutoMode {
-  manual,    // user controls everything
-  assisted,  // AI suggests, user approves
-  semiAuto,  // executes within guardrail limits
-  fullyAuto, // AI trades autonomously
-}
+  // ── Loading flags ───────────────────────────────────────────────────────
+  bool _isSemiLoading  = false;
+  bool _isFullyLoading = false;
+  bool _isKillLoading  = false;
 
-class LogEntry {
-  final String id;
-  final String pair;
-  final String action; // e.g. 'BUY 0.1 lots'
-  final String result; // e.g. '+$42.00' | 'Blocked: daily cap' | '-$18.00'
-  final AutoMode triggeredBy;
-  final DateTime timestamp;
+  // ── Today's stats (from backend) ────────────────────────────────────────
+  int    _tradesToday    = 0;
+  int    _signalsToday   = 0;
+  int    _blockedToday   = 0;
+  int    _openPositions  = 0;
+  double _pnlToday       = 0.0;
 
-  const LogEntry({
-    required this.id,
-    required this.pair,
-    required this.action,
-    required this.result,
-    required this.triggeredBy,
-    required this.timestamp,
-  });
-}
+  // ── Error ───────────────────────────────────────────────────────────────
+  String? _lastError;
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+  // ── Getters ─────────────────────────────────────────────────────────────
+  bool    get semiEnabled    => _semiEnabled;
+  bool    get fullyEnabled   => _fullyEnabled;
+  bool    get isSemiLoading  => _isSemiLoading;
+  bool    get isFullyLoading => _isFullyLoading;
+  bool    get isKillLoading  => _isKillLoading;
+  int     get tradesToday    => _tradesToday;
+  int     get signalsToday   => _signalsToday;
+  int     get blockedToday   => _blockedToday;
+  int     get openPositions  => _openPositions;
+  double  get pnlToday       => _pnlToday;
+  String? get lastError      => _lastError;
 
-/// Manages automation mode, risk guardrails, auto-follow settings, and
-/// a live execution log. There is intentionally no kill switch — mode
-/// changes require deliberate user selection from [setMode].
-class AutomationProvider extends ChangeNotifier {
-  bool _isLoading = false;
+  // ── Internal ApiService reference ───────────────────────────────────────
+  // Resolved lazily from Provider tree — caller passes it in for actions.
+  // For simplicity, we accept an optional ApiService on the methods that
+  // need it; the screen passes context.read<ApiService>() each time.
 
-  // Mode
-  AutoMode _mode = AutoMode.manual;
-
-  // Guardrails
-  double _maxDrawdown = 20.0;   // percent
-  double _dailyLossCap = 200.0; // USD
-  int _maxOpenTrades = 5;
-
-  // Auto-follow settings
-  bool _autoFollowEnabled = false;
-  bool _showAiReasoning = true;
-
-  // Execution log
-  List<LogEntry> _log = [];
-
-  // ─── Getters ────────────────────────────────────────────────────────────
-
-  bool get isLoading => _isLoading;
-  AutoMode get mode => _mode;
-  double get maxDrawdown => _maxDrawdown;
-  double get dailyLossCap => _dailyLossCap;
-  int get maxOpenTrades => _maxOpenTrades;
-  bool get autoFollowEnabled => _autoFollowEnabled;
-  bool get showAiReasoning => _showAiReasoning;
-  List<LogEntry> get log => List.unmodifiable(_log);
-
-  /// Whether any form of automation is currently active.
-  bool get isAutomationActive =>
-      _mode == AutoMode.semiAuto || _mode == AutoMode.fullyAuto;
-
-  /// Human-readable label for the current mode.
-  String get modeLabel {
-    switch (_mode) {
-      case AutoMode.manual:
-        return 'Manual';
-      case AutoMode.assisted:
-        return 'Assisted';
-      case AutoMode.semiAuto:
-        return 'Semi-Auto';
-      case AutoMode.fullyAuto:
-        return 'Fully Auto';
+  // ── Status refresh ───────────────────────────────────────────────────────
+  Future<void> refreshStatus([ApiService? api]) async {
+    try {
+      if (api == null) return; // no-op when called without service (boot)
+      final data = await api.getFeaturesStatus();
+      final autonomous = data['features']?['autonomous_actions'];
+      if (autonomous is Map) {
+        _semiEnabled  = autonomous['semi_active']  as bool? ?? _semiEnabled;
+        _fullyEnabled = autonomous['fully_active'] as bool? ?? _fullyEnabled;
+      }
+      final stats = data['agent_stats'];
+      if (stats is Map) {
+        _tradesToday   = (stats['trades_today']   as num?)?.toInt()    ?? 0;
+        _signalsToday  = (stats['signals_today']  as num?)?.toInt()    ?? 0;
+        _blockedToday  = (stats['blocked_today']  as num?)?.toInt()    ?? 0;
+        _openPositions = (stats['open_positions'] as num?)?.toInt()    ?? 0;
+        _pnlToday      = (stats['pnl_today']      as num?)?.toDouble() ?? 0.0;
+      }
+      _lastError = null;
+    } catch (e) {
+      if (kDebugMode) debugPrint('AutomationProvider.refreshStatus: $e');
+      // Non-fatal — keep last known state, don't surface error to UI
     }
+    notifyListeners();
   }
 
-  // ─── Init ───────────────────────────────────────────────────────────────
-
-  /// Load execution log from backend. [token] is the auth bearer token.
-  Future<void> loadLog(String token) async {
-    _isLoading = true;
+  // ── Semi-Autonomous ──────────────────────────────────────────────────────
+  Future<void> enableSemiAutonomous([ApiService? api]) async {
+    if (_isSemiLoading) return;
+    _isSemiLoading = true;
+    _lastError     = null;
     notifyListeners();
 
     try {
-      // TODO: replace with real API call using [token]
-      await Future.delayed(const Duration(milliseconds: 500));
-      _log = _mockLog();
-    } catch (_) {
-      // Log is non-critical; fail silently
+      if (api != null) {
+        await api.setNotificationPreferences(autonomousMode: true);
+      }
+      _semiEnabled  = true;
+      _fullyEnabled = false; // mutually exclusive
+    } catch (e) {
+      _lastError = _friendlyError(e);
+      if (kDebugMode) debugPrint('enableSemiAutonomous: $e');
     } finally {
-      _isLoading = false;
+      _isSemiLoading = false;
       notifyListeners();
     }
   }
 
-  // ─── Mode ───────────────────────────────────────────────────────────────
-
-  /// Switch automation mode. [token] is used to persist the change server-side.
-  Future<void> setMode(AutoMode newMode, String token) async {
-    if (_mode == newMode) return;
-    _mode = newMode;
+  Future<void> disableSemiAutonomous([ApiService? api]) async {
+    if (_isSemiLoading) return;
+    _isSemiLoading = true;
+    _lastError     = null;
     notifyListeners();
 
-    // TODO: PATCH /api/automation/mode with { mode: newMode.name, token }
-    await Future.delayed(const Duration(milliseconds: 100));
-  }
-
-  // ─── Guardrails ──────────────────────────────────────────────────────────
-
-  void setMaxDrawdown(double value) {
-    _maxDrawdown = value.clamp(1, 50);
-    notifyListeners();
-    _syncGuardrails();
-  }
-
-  void setDailyLossCap(double value) {
-    _dailyLossCap = value.clamp(10, 10000);
-    notifyListeners();
-    _syncGuardrails();
-  }
-
-  void setMaxOpenTrades(int value) {
-    _maxOpenTrades = value.clamp(1, 20);
-    notifyListeners();
-    _syncGuardrails();
-  }
-
-  Future<void> _syncGuardrails() async {
-    // TODO: PATCH /api/automation/guardrails with current values
-    await Future.delayed(const Duration(milliseconds: 50));
-  }
-
-  // ─── Auto-follow ─────────────────────────────────────────────────────────
-
-  void setAutoFollow(bool value) {
-    if (_autoFollowEnabled == value) return;
-    _autoFollowEnabled = value;
-    notifyListeners();
-  }
-
-  void setShowAiReasoning(bool value) {
-    if (_showAiReasoning == value) return;
-    _showAiReasoning = value;
-    notifyListeners();
-  }
-
-  // ─── Execution log ───────────────────────────────────────────────────────
-
-  /// Append a new log entry. Called by TradeExecutionProvider after execution.
-  void appendLog(LogEntry entry) {
-    _log = [entry, ..._log];
-    notifyListeners();
-  }
-
-  /// Checks whether an incoming auto-trade should be allowed or blocked
-  /// based on current guardrails and open trade count.
-  AutoTradeDecision evaluateAutoTrade({
-    required int currentOpenCount,
-    required double estimatedLoss,
-    required double currentDrawdownPct,
-  }) {
-    if (!isAutomationActive) {
-      return AutoTradeDecision(
-          allowed: false, reason: 'Automation is not active');
+    try {
+      if (api != null) {
+        await api.setNotificationPreferences(autonomousMode: false);
+      }
+      _semiEnabled = false;
+    } catch (e) {
+      _lastError = _friendlyError(e);
+    } finally {
+      _isSemiLoading = false;
+      notifyListeners();
     }
-    if (currentOpenCount >= _maxOpenTrades) {
-      return AutoTradeDecision(
-          allowed: false,
-          reason: 'Max open trades limit reached ($_maxOpenTrades)');
-    }
-    if (estimatedLoss > _dailyLossCap) {
-      return AutoTradeDecision(
-          allowed: false,
-          reason: 'Exceeds daily loss cap (\$$_dailyLossCap)');
-    }
-    if (currentDrawdownPct > _maxDrawdown) {
-      return AutoTradeDecision(
-          allowed: false,
-          reason: 'Drawdown limit exceeded ($_maxDrawdown%)');
-    }
-    return AutoTradeDecision(allowed: true);
   }
 
-  // ─── Mock data (replace with API) ─────────────────────────────────────────
+  // ── Fully Autonomous ─────────────────────────────────────────────────────
+  Future<void> enableFullyAutonomous([ApiService? api]) async {
+    if (_isFullyLoading) return;
+    _isFullyLoading = true;
+    _lastError      = null;
+    notifyListeners();
 
-  List<LogEntry> _mockLog() {
-    final now = DateTime.now();
-    return [
-      LogEntry(
-        id: 'l_001',
-        pair: 'EUR/USD',
-        action: 'BUY 0.1 lots @ 1.0845',
-        result: '+\$34.20',
-        triggeredBy: AutoMode.semiAuto,
-        timestamp: now.subtract(const Duration(minutes: 18)),
-      ),
-      LogEntry(
-        id: 'l_002',
-        pair: 'GBP/USD',
-        action: 'SELL 0.05 lots @ 1.2630',
-        result: 'Blocked: max open trades',
-        triggeredBy: AutoMode.fullyAuto,
-        timestamp: now.subtract(const Duration(hours: 1, minutes: 12)),
-      ),
-      LogEntry(
-        id: 'l_003',
-        pair: 'USD/JPY',
-        action: 'BUY 0.2 lots @ 149.20',
-        result: '+\$76.00',
-        triggeredBy: AutoMode.semiAuto,
-        timestamp: now.subtract(const Duration(hours: 3)),
-      ),
-      LogEntry(
-        id: 'l_004',
-        pair: 'AUD/USD',
-        action: 'SELL 0.1 lots @ 0.6510',
-        result: '-\$22.40',
-        triggeredBy: AutoMode.assisted,
-        timestamp: now.subtract(const Duration(hours: 6)),
-      ),
-      LogEntry(
-        id: 'l_005',
-        pair: 'EUR/GBP',
-        action: 'BUY 0.05 lots @ 0.8560',
-        result: 'Blocked: drawdown limit',
-        triggeredBy: AutoMode.fullyAuto,
-        timestamp: now.subtract(const Duration(days: 1)),
-      ),
-    ];
+    try {
+      if (api != null) {
+        // POST /agent/start via configureAutonomyGuardrails
+        await api.configureAutonomyGuardrails(
+          level:   'full',
+          profile: 'conservative',
+        );
+      }
+      _fullyEnabled = true;
+      _semiEnabled  = false; // mutually exclusive
+    } catch (e) {
+      _lastError = _friendlyError(e);
+      if (kDebugMode) debugPrint('enableFullyAutonomous: $e');
+    } finally {
+      _isFullyLoading = false;
+      notifyListeners();
+    }
   }
-}
 
-// ─── Decision model ───────────────────────────────────────────────────────────
+  Future<void> disableFullyAutonomous([ApiService? api]) async {
+    if (_isFullyLoading) return;
+    _isFullyLoading = true;
+    _lastError      = null;
+    notifyListeners();
 
-class AutoTradeDecision {
-  final bool allowed;
-  final String? reason;
+    try {
+      if (api != null) {
+        await api.configureAutonomyGuardrails(level: 'off');
+      }
+      _fullyEnabled = false;
+    } catch (e) {
+      _lastError = _friendlyError(e);
+    } finally {
+      _isFullyLoading = false;
+      notifyListeners();
+    }
+  }
 
-  const AutoTradeDecision({required this.allowed, this.reason});
+  // ── Kill-switch ──────────────────────────────────────────────────────────
+  Future<void> activateKillSwitch([ApiService? api]) async {
+    if (_isKillLoading) return;
+    _isKillLoading = true;
+    _lastError     = null;
+    notifyListeners();
+
+    try {
+      if (api != null) {
+        await api.activateKillSwitch();
+      }
+      _semiEnabled  = false;
+      _fullyEnabled = false;
+    } catch (e) {
+      _lastError = _friendlyError(e);
+      if (kDebugMode) debugPrint('activateKillSwitch: $e');
+      // Still disable locally even if backend call fails — safety first
+      _semiEnabled  = false;
+      _fullyEnabled = false;
+    } finally {
+      _isKillLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  String _friendlyError(Object e) {
+    final msg = e.toString();
+    if (msg.contains('Authentication') || msg.contains('401')) {
+      return 'Session expired — please log in again.';
+    }
+    if (msg.contains('broker') || msg.contains('connection')) {
+      return 'Broker connection required. Connect in Settings.';
+    }
+    if (msg.contains('timeout') || msg.contains('Timeout')) {
+      return 'Request timed out. Check your connection and try again.';
+    }
+    return 'Something went wrong. Please try again.';
+  }
 }

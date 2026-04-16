@@ -143,3 +143,4 @@ class LockoutState {
     required this.bundlesUsed,
   });
 }
+

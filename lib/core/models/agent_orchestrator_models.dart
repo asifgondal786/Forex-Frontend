@@ -172,3 +172,4 @@ double _toDouble(dynamic value, double fallback) {
   }
   return fallback;
 }
+

@@ -1,5 +1,3 @@
-import '../../core/widgets/quick_actions_overlay.dart';
-import '../../providers/mode_provider.dart';
 // lib/features/trade_signals/trade_signals_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -57,38 +55,6 @@ class _TradeSignalsScreenState extends State<TradeSignalsScreen>
           child: CustomScrollView(
             slivers: [
               _buildAppBar(ctx, provider),
-              SliverToBoxAdapter(
-                child: QuickActionsOverlay(
-                  modeKey: 'tradeSignals',
-                  accentColor: const Color(0xFFD4A853),
-                  title: 'QUICK ACTIONS',
-                  onAction: (action) {
-                    switch (action.routeOrAction) {
-                      case 'filter_buy':
-                        provider.setFilter('Buy');
-                        break;
-                      case 'filter_sell':
-                        provider.setFilter('Sell');
-                        break;
-                      case 'filter_high_conf':
-                        provider.setFilter('Active');
-                        break;
-                      case 'switch_chat':
-                        context.read<ModeProvider>().setMode(AppMode.aiChat);
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          '/dashboard',
-                          (_) => false,
-                        );
-                        break;
-                      default:
-                        if (action.isRoute) {
-                          Navigator.pushNamed(context, action.routeOrAction);
-                        }
-                    }
-                  },
-                ),
-              ),
               SliverToBoxAdapter(child: _SignalSummaryBar(provider: provider)),
               SliverToBoxAdapter(
                 child: Padding(
@@ -684,3 +650,4 @@ class _LevelChip extends StatelessWidget {
     ),
   );
 }
+

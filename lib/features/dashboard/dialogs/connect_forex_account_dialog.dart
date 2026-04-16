@@ -122,3 +122,4 @@ class _ConnectForexAccountDialogState extends State<ConnectForexAccountDialog> {
     );
   }
 }
+

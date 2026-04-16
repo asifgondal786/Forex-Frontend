@@ -126,3 +126,4 @@ class AppNotification {
     return <String, String>{};
   }
 }
+

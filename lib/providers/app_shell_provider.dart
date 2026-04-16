@@ -13,3 +13,4 @@ class AppShellProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+

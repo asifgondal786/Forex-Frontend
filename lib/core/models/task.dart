@@ -248,3 +248,4 @@ TaskPriority _parsePriority(dynamic value) {
   }
   return TaskPriority.medium;
 }
+

@@ -67,3 +67,4 @@ class AiPredictionModel {
 
   bool get isBullish => action.toUpperCase() == 'BUY';
 }
+

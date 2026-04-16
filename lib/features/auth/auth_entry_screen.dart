@@ -24,3 +24,4 @@ class AuthEntryScreen extends StatelessWidget {
     return const AuthGate();
   }
 }
+

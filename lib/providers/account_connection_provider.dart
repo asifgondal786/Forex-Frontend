@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forex_companion/core/models/account_connection.dart';
-import 'package:forex_companion/services/api_service.dart';
+import '../services/api_service.dart';
 
 class AccountConnectionProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -125,5 +125,11 @@ class AccountConnectionProvider extends ChangeNotifier {
         status: AccountConnectionStatus.connected,
       ),
     ];
+  }
+  Future<void> disconnect(String accountId) async {
+    try {
+      await _api.disconnectAccount(accountId);
+    } catch (_) {}
+    await loadConnections();
   }
 }

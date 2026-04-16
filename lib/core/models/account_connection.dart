@@ -109,3 +109,4 @@ class AccountConnection {
   bool get isDisconnected => status == AccountConnectionStatus.disconnected;
   bool get hasError => status == AccountConnectionStatus.error;
 }
+

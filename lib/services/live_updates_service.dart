@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'api_service.dart';
+import '../services/api_service.dart';
 
 class LiveUpdate {
   final String pair;
@@ -325,3 +325,4 @@ class LiveUpdatesService {
     });
   }
 }
+

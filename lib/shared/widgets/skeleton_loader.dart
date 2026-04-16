@@ -110,3 +110,4 @@ class SkeletonListScreen extends StatelessWidget {
     );
   }
 }
+

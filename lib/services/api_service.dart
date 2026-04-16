@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -62,7 +62,7 @@ class ApiService {
     r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
   );
 
-  // ── Base URL ────────────────────────────────────────────────────────────────
+  // -- Base URL ----------------------------------------------------------------
 
   static String get baseUrl {
     final fromDefine = _baseUrlFromDefine.trim();
@@ -81,7 +81,7 @@ class ApiService {
 
   final http.Client _client = http.Client();
 
-  // ── Static helpers ──────────────────────────────────────────────────────────
+  // -- Static helpers ----------------------------------------------------------
 
   static String _normalizeBaseUrl(String v) =>
       v.endsWith('/') ? v.substring(0, v.length - 1) : v;
@@ -251,7 +251,7 @@ static Future<bool> isHealthy() async {
     throw ApiException(message, response.statusCode);
   }
 
-  // ── Fallback data ───────────────────────────────────────────────────────────
+  // -- Fallback data -----------------------------------------------------------
 
   Map<String, double> _fallbackForexRates() => {
         'EUR/USD': 1.0834, 'GBP/USD': 1.2712, 'USD/JPY': 154.22,
@@ -798,7 +798,7 @@ static Future<bool> isHealthy() async {
   }
 
   // =========================================================================
-  // MARKET DATA ENDPOINTS  (/api/v1  — no auth required)
+  // MARKET DATA ENDPOINTS  (/api/v1  � no auth required)
   // =========================================================================
 
   /// Fetches live bid/ask/mid prices from /api/v1/market/prices.
@@ -830,14 +830,14 @@ static Future<bool> isHealthy() async {
       final uri = Uri.parse('$baseUrl$apiV1/market/prices').replace(
         queryParameters: {'pairs': backendPairs.join(',')},
       );
-      // Public endpoint — no auth header (matches fetchOHLCData pattern).
+      // Public endpoint � no auth header (matches fetchOHLCData pattern).
       final response = await _client.get(uri).timeout(_timeout);
       final data     = _handleResponse(response);
 
       if (data is Map<String, dynamic> && data['prices'] is List) {
         return (data['prices'] as List).cast<Map<String, dynamic>>();
       }
-      debugPrint('fetchMarketPrices: unexpected shape — ${data.runtimeType}');
+      debugPrint('fetchMarketPrices: unexpected shape � ${data.runtimeType}');
       return _fallbackMarketPrices(backendPairs);
     } catch (e) {
       debugPrint('fetchMarketPrices error: $e');
@@ -931,7 +931,7 @@ static Future<bool> isHealthy() async {
   }
 
   // =========================================================================
-  // FOREX DATA ENDPOINTS  (/v1/api — authenticated)
+  // FOREX DATA ENDPOINTS  (/v1/api � authenticated)
   // =========================================================================
 
   Future<Map<String, dynamic>> getForexRates({List<String>? pairs}) async {
@@ -1474,3 +1474,4 @@ Future<Map<String, dynamic>> aiChat(
 
   // -----------------------------------------------------------
 }
+

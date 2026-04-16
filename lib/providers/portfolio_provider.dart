@@ -285,3 +285,4 @@ class PortfolioProvider extends ChangeNotifier {
     ];
   }
 }
+

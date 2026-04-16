@@ -32,3 +32,4 @@ class ChartService {
 
   static bool get isInitialized => _initialized;
 }
+

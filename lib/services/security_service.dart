@@ -270,3 +270,4 @@ class SecurityService {
     return isValid;
   }
 }
+

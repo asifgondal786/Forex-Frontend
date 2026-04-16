@@ -190,3 +190,4 @@ class ConfidenceGaugePainter extends CustomPainter {
     return oldDelegate.confidence != confidence;
   }
 }
+

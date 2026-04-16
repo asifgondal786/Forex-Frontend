@@ -209,3 +209,4 @@ class NotificationProvider extends ChangeNotifier {
     ];
   }
 }
+

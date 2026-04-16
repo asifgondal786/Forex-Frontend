@@ -15,3 +15,4 @@ extension ColorExtension on Color {
   Color get mediumTransparent => withValues(alpha: 0.3);
   Color get transparent50 => withValues(alpha: 0.5);
 }
+

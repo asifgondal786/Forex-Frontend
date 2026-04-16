@@ -208,3 +208,4 @@ class _AnimatedGradientBorderCardState
     );
   }
 }
+

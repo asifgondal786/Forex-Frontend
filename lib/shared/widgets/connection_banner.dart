@@ -179,3 +179,4 @@ class _BannerContent extends StatelessWidget {
 }
 
 enum _Status { checking, online, offline }
+

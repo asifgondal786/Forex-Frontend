@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
-import 'api_service.dart';
+﻿import 'package:flutter/foundation.dart';
+import '../services/api_service.dart';
 
 /// Parsed result from the NLP backend.
 class NlpResult {
@@ -83,7 +83,7 @@ class NlpService {
     required String userId,
   }) async {
     if (!result.isTradeIntent) {
-      throw ApiException('NlpResult is not a valid trade intent.');
+      throw Exception('NlpResult is not a valid trade intent.');
     }
     return _api.openPaperTrade(
       userId:     userId,
@@ -96,3 +96,4 @@ class NlpService {
     );
   }
 }
+

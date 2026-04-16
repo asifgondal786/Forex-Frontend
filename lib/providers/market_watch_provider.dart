@@ -1,4 +1,4 @@
-// lib/providers/market_watch_provider.dart
+﻿// lib/providers/market_watch_provider.dart
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
@@ -262,8 +262,8 @@ class MarketWatchProvider extends ChangeNotifier {
       }).toList();
 
       _error = null;
-    } on ApiException catch (e) {
-      if (!_disposed) _error = e.message;
+    } catch (e) {
+      if (!_disposed) _error = e.toString();
     } catch (e) {
       if (!_disposed) {
         _error = 'Connection error';
@@ -287,3 +287,4 @@ class MarketWatchProvider extends ChangeNotifier {
     }
   }
 }
+

@@ -98,3 +98,4 @@ class SentryService {
 
 // Type alias to match SentryFlutter's expected callback signature
 typedef AppRunner = Future<void> Function();
+

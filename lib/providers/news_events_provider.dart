@@ -200,3 +200,4 @@ class NewsEventsProvider extends ChangeNotifier {
 
   Future<void> refresh() async => init();
 }
+

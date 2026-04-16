@@ -22,3 +22,4 @@ class ThemeProvider extends ChangeNotifier {
     return _isDarkMode ? AppTheme.darkTheme : ThemeData.light();
   }
 }
+

@@ -220,3 +220,4 @@ class _TwoFASetupScreenState extends State<TwoFASetupScreen> {
     super.dispose();
   }
 }
+

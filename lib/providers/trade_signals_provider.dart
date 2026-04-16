@@ -1,4 +1,4 @@
-// lib/providers/trade_signals_provider.dart
+﻿// lib/providers/trade_signals_provider.dart
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../services/api_service.dart';
@@ -242,9 +242,9 @@ class TradeSignalsProvider extends ChangeNotifier {
         }
         if (kDebugMode) debugPrint('TradeSignalsProvider: empty response');
       }
-    } on ApiException catch (e) {
+    } catch (e) {
       if (!_disposed) {
-        _error = e.message;
+        _error = e.toString();
         if (kDebugMode) debugPrint('TradeSignalsProvider API error: $e');
       }
     } catch (e) {
@@ -271,3 +271,4 @@ class TradeSignalsProvider extends ChangeNotifier {
     }
   }
 }
+

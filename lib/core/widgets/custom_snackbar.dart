@@ -105,3 +105,4 @@ class CustomSnackbar {
     show(context, message: message, type: NotificationType.info);
   }
 }
+

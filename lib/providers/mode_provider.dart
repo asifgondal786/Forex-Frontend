@@ -81,3 +81,4 @@ class ModeProvider extends ChangeNotifier {
     await prefs.remove(_prefKey);
   }
 }
+

@@ -74,3 +74,4 @@ class AppConstants {
   static const String chartBearishColor = '#FF3B30';
   static const String chartGridColor = '#2A3F5F';
 }
+
