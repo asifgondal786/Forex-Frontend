@@ -1,7 +1,7 @@
 // lib/providers/news_events_provider.dart
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../services/api_service.dart';
+import 'package:forex_companion/services/api_service.dart';
 
 enum NewsImpact { high, medium, low }
 enum NewsSentiment { bullish, bearish, neutral }

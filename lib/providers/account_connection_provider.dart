@@ -128,7 +128,7 @@ class AccountConnectionProvider extends ChangeNotifier {
   }
   Future<void> disconnect(String accountId) async {
     try {
-      await _api.disconnectAccount(accountId);
+      await _apiService.disconnectAccount(accountId);
     } catch (_) {}
     await loadConnections();
   }
