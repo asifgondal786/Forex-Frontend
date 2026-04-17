@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:forex_companion/providers/mode_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'core/config/firebase_config.dart';
@@ -127,6 +128,7 @@ class TajirApp extends StatelessWidget {
 
         // ── Automation / agent modes (Agent screen) ────────────────────
         ChangeNotifierProvider(create: (_) => AutomationProvider()),
+        ChangeNotifierProvider(create: (_) => ModeProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) => MaterialApp(
