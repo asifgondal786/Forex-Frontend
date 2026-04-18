@@ -5,7 +5,6 @@ import '../../core/models/account_connection.dart';
 import '../../providers/account_connection_provider.dart';
 import '../../providers/market_watch_provider.dart';
 import '../../providers/news_events_provider.dart';
-import '../ai_chat/ai_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

@@ -96,7 +96,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     _autoRefreshTimer?.cancel();
     Navigator.pushNamedAndRemoveUntil(
       context,
-      AppRoutes.dashboard,
+      AppRoutes.home,
       (_) => false,
     );
   }

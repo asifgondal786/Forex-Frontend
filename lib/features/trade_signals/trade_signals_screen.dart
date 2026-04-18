@@ -65,6 +65,45 @@ class _TradeSignalsScreenState extends State<TradeSignalsScreen>
               if (provider.isLoading)
                 const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator(color: _kGold)))
+              else if (provider.error != null)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.warning_rounded, color: _kRed, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Unable to load signals',
+                            style: TextStyle(
+                              color: _kText,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            provider.error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: _kSubtext, fontSize: 13),
+                          ),
+                          const SizedBox(height: 20),
+                          FilledButton.icon(
+                            onPressed: provider.refresh,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _kGold,
+                              foregroundColor: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
               else if (provider.signals.isEmpty)
                 const SliverFillRemaining(child: _EmptyState())
               else

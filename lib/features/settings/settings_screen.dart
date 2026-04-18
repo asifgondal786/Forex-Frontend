@@ -113,7 +113,9 @@ class SettingsScreen extends StatelessWidget {
             iconColor: _kBlue,
             title: 'Security centre',
             subtitle: '2FA and session controls',
-            onTap: () => Navigator.pushNamed(context, AppRoutes.security),
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Security features coming soon')),
+            ),
           ),
           const SizedBox(height: 20),
 

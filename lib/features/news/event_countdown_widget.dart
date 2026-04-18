@@ -123,7 +123,7 @@ class _EventCountdownWidgetState extends State<EventCountdownWidget> {
         final accentDim = _shieldActive ? _kRedDim : const Color(0xFF3D2800);
 
         return GestureDetector(
-          onTap: () => Navigator.pushNamed(context, AppRoutes.dashboard),
+          onTap: () => Navigator.pushNamed(context, AppRoutes.home),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

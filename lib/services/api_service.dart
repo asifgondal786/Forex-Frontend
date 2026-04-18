@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -8,7 +8,6 @@ import '../core/models/user.dart';
 import '../core/models/header_model.dart';
 import '../core/models/app_notification.dart';
 import '../core/models/account_connection.dart';
-import '../core/utils/runtime_url_resolver.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -68,14 +67,12 @@ class ApiService {
     final fromDefine = _baseUrlFromDefine.trim();
     if (fromDefine.isNotEmpty) return _normalizeBaseUrl(fromDefine);
 
-    final currentOrigin = resolveCurrentWebOrigin();
-    if (currentOrigin != null && currentOrigin.isNotEmpty) return currentOrigin;
-
     if (!kDebugMode) {
       throw StateError('API_BASE_URL must be configured for non-debug builds.');
     }
 
-    final fallback = kIsWeb ? 'http://localhost:8080' : 'http://127.0.0.1:8080';
+    // Always use 127.0.0.1:8001 for API — never use the web dev server origin (e.g., :60051)
+    final fallback = kIsWeb ? 'http://127.0.0.1:8001' : 'http://127.0.0.1:8001';
     return _normalizeBaseUrl(fallback);
   }
 
@@ -195,6 +192,19 @@ static Future<bool> isHealthy() async {
     return headers;
   }
 
+  /// Cast all nested Maps to Map<String, dynamic>
+  /// Recursively processes the entire structure including nested maps and lists.
+  dynamic _deepCastMap(dynamic value) {
+    if (value is Map) {
+      return Map<String, dynamic>.from(
+        value.map((k, v) => MapEntry(k.toString(), _deepCastMap(v))),
+      );
+    } else if (value is List) {
+      return value.map(_deepCastMap).toList();
+    }
+    return value;
+  }
+
   dynamic _handleResponse(http.Response response) {
     if (kDebugMode) {
       debugPrint('Response ${response.statusCode}: ${response.body}');
@@ -203,7 +213,8 @@ static Future<bool> isHealthy() async {
     dynamic decoded;
     if (response.body.isNotEmpty) {
       try {
-        decoded = json.decode(utf8.decode(response.bodyBytes));
+        var raw = json.decode(utf8.decode(response.bodyBytes));
+        decoded = _deepCastMap(raw);
       } catch (_) {
         decoded = null;
       }
@@ -736,8 +747,9 @@ static Future<bool> isHealthy() async {
           .get(Uri.parse('$baseUrl$apiV1b/accounts/connections'), headers: headers)
           .timeout(_timeout);
       final data = _handleResponse(response);
-      if (data is Map && data.containsKey('connections')) {
-        return (data['connections'] as List)
+      // Fixed: API returns 'accounts' not 'connections'
+      if (data is Map && data.containsKey('accounts')) {
+        return (data['accounts'] as List)
             .map((j) => AccountConnection.fromJson(j)).toList();
       }
       throw ApiException('Invalid connections response');

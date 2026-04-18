@@ -128,7 +128,13 @@ class TajirApp extends StatelessWidget {
 
         // ── Automation / agent modes (Agent screen) ────────────────────
         ChangeNotifierProvider(create: (_) => AutomationProvider()),
-        ChangeNotifierProvider(create: (_) => ModeProvider()),
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = ModeProvider();
+            provider.load(); // Fire async init in background
+            return provider;
+          },
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) => MaterialApp(
