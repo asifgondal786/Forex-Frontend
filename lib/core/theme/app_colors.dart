@@ -1,28 +1,41 @@
-import 'package:flutter/material.dart';
-import 'package:forex_companion/config/theme.dart';
+// lib/core/theme/app_colors.dart
+// Alias layer — keeps AppColors.X compiling while screens migrate to AppTheme.X
+// DO NOT import config/theme.dart — that file is deleted.
+// This file's ONLY job is to re-export AppTheme constants under the old names.
+
+import 'app_theme.dart';
 
 class AppColors {
-  static const Color darkBlue = AppTheme.primaryDarkBlue;
-  static const Color midBlue = AppTheme.accentCyan;
-  static const Color lightBlue = AppTheme.accentTeal;
-  static const Color primaryBlue = AppTheme.accentCyan;
-  static const Color primaryGreen = AppTheme.successGreen;
-  static const Color successGreen = AppTheme.successGreen;
-  static const Color errorRed = AppTheme.errorRed;
-  static const Color sidebarDark = AppTheme.primaryDark;
-  static const Color statusRunning = AppTheme.successGreen;
-  static const Color statusCompleted = AppTheme.accentCyan;
-  static const Color statusPending = Colors.white54;
-  static const Color priorityHigh = AppTheme.errorRed;
-  static const Color priorityMedium = AppTheme.warningOrange;
-  static const Color priorityLow = AppTheme.successGreen;
-  static const Color backgroundDark = AppTheme.primaryDark;
-  static const Color cardDark = AppTheme.cardBackground;
-  static const Color cardLight = Colors.white;
-  static const Color stopButton = AppTheme.errorRed;
-  static const Color pauseButton = AppTheme.warningOrange;
-  static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Colors.white70;
-  static const Color textMuted = Colors.white54;
-}
+  AppColors._(); // prevent instantiation
 
+  // ── Primary palette ────────────────────────────────────────────────────────
+  static const primary        = AppTheme.primary;       // #00D4AA teal
+  static const accent         = AppTheme.accent;        // #7C5CFC purple
+  static const gold           = AppTheme.gold;          // #FFB800
+  static const danger         = AppTheme.danger;        // #FF4757
+  static const success        = AppTheme.success;       // #2ED573
+  static const warning        = AppTheme.warning;       // #FF6B35
+
+  // ── Background layers ──────────────────────────────────────────────────────
+  static const bg0            = AppTheme.bg0;           // #090E1A  scaffold
+  static const bg1            = AppTheme.bg1;           // #0D1421  card
+  static const bg2            = AppTheme.bg2;           // #111927  elevated card
+  static const bg3            = AppTheme.bg3;           // #1A2235  input / chip
+
+  // ── Text ───────────────────────────────────────────────────────────────────
+  static const textPrimary    = AppTheme.textPrimary;   // #EEF2FF
+  static const textSecondary  = AppTheme.textSecondary; // #8892B0
+
+  // ── Legacy aliases (old names → new values) ────────────────────────────────
+  static const darkBlue         = AppTheme.bg0;
+  static const primaryBlue      = AppTheme.primary;
+  static const primaryGreen     = AppTheme.success;
+  static const successGreen     = AppTheme.success;
+  static const errorRed         = AppTheme.danger;
+  static const backgroundDark   = AppTheme.bg0;
+  static const cardDark         = AppTheme.bg1;
+  static const textMuted        = AppTheme.textSecondary;
+  static const surface          = AppTheme.bg1;
+  static const surfaceVariant   = AppTheme.bg2;
+  static const border           = AppTheme.bg3;
+}

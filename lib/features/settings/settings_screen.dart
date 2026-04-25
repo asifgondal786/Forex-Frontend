@@ -8,10 +8,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/models/account_connection.dart';
-import '../../providers/account_connection_provider.dart';
-import '../../providers/risk_provider.dart';
-import '../../routes/app_routes.dart';
+
+import '../../providers/broker_provider.dart';
+import '../../core/routes/app_routes.dart';
 import 'connect_broker_sheet.dart';
 
 // palette — matches the rest of the app

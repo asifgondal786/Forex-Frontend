@@ -1,25 +1,56 @@
+// lib/features/news/event_countdown_widget.dart
+// Shows upcoming forex economic calendar events with a live countdown timer.
+// Fetches from backend /api/v1/news — no deleted providers used.
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/news_events_provider.dart';
-import '../../routes/app_routes.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
+import '../../services/api_service.dart';
 
-// Palette — matches news_events_screen.dart
-const _kBg      = Color(0xFF0A0E1A);
-const _kCard    = Color(0xFF161D2E);
-const _kBorder  = Color(0xFF1E2A3D);
-const _kGold    = Color(0xFFD4A853);
-const _kRed     = Color(0xFFFF4560);
-const _kRedDim  = Color(0xFF3D0010);
-const _kAmber   = Color(0xFFF59E0B);
-const _kGreen   = Color(0xFF00C896);
-const _kBlue    = Color(0xFF3B82F6);
-const _kText    = Color(0xFFE2E8F0);
-const _kSubtext = Color(0xFF64748B);
+// ── Impact level colours ──────────────────────────────────────────────────────
+const Color _kAmber  = Color(0xFFFFB800);
+const Color _kGreen  = Color(0xFF2ED573);
+const Color _kBlue   = Color(0xFF3A86FF);
 
-/// Compact banner shown on the dashboard.
-/// Shows live countdown to the next high-impact event.
-/// Turns red when shield is active (< 30 min).
+enum NewsImpact { high, medium, low }
+
+class NewsEvent {
+  final String title;
+  final String currency;
+  final DateTime time;
+  final NewsImpact impact;
+  final String? forecast;
+  final String? previous;
+
+  const NewsEvent({
+    required this.title,
+    required this.currency,
+    required this.time,
+    required this.impact,
+    this.forecast,
+    this.previous,
+  });
+
+  factory NewsEvent.fromJson(Map<String, dynamic> j) {
+    final impactStr = (j['impact'] as String? ?? 'low').toLowerCase();
+    return NewsEvent(
+      title:    j['title']    as String? ?? 'Unknown Event',
+      currency: j['currency'] as String? ?? 'USD',
+      time:     DateTime.tryParse(j['time'] as String? ?? '') ?? DateTime.now(),
+      impact:   impactStr == 'high'
+                  ? NewsImpact.high
+                  : impactStr == 'medium'
+                      ? NewsImpact.medium
+                      : NewsImpact.low,
+      forecast: j['forecast'] as String?,
+      previous: j['previous'] as String?,
+    );
+  }
+}
+
+// ── Public widget ─────────────────────────────────────────────────────────────
 class EventCountdownWidget extends StatefulWidget {
   const EventCountdownWidget({super.key});
 
@@ -28,19 +59,19 @@ class EventCountdownWidget extends StatefulWidget {
 }
 
 class _EventCountdownWidgetState extends State<EventCountdownWidget> {
+  List<NewsEvent> _events = [];
+  bool _loading = true;
+  String? _error;
   Timer? _ticker;
-  Duration _remaining = Duration.zero;
-  String _eventTitle = '';
-  String _eventCategory = '';
-  bool _shieldActive = false;
-  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Tick every second to update countdown
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-    WidgetsBinding.instance.addPostFrameCallback((_) => _sync());
+    _load();
+    // Refresh countdown every second
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -49,189 +80,242 @@ class _EventCountdownWidgetState extends State<EventCountdownWidget> {
     super.dispose();
   }
 
-  void _sync() {
-    final provider = context.read<NewsEventsProvider>();
-    _updateFromProvider(provider);
-  }
-
-  void _tick() {
-    if (!mounted) return;
-    if (_remaining.inSeconds > 0) {
-      setState(() => _remaining -= const Duration(seconds: 1));
-    } else {
-      // Re-sync from provider when countdown hits zero
-      _sync();
-    }
-  }
-
-  void _updateFromProvider(NewsEventsProvider provider) {
-    if (!mounted) return;
-    final events = provider.upcomingEvents;
-    if (events.isEmpty) {
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final api = context.read<ApiService>();
+      final data = await api.fetchNews();
+      final raw  = data['events'] as List<dynamic>? ?? [];
       setState(() {
-        _initialized = true;
-        _eventTitle = 'No events scheduled';
-        _eventCategory = '';
-        _remaining = Duration.zero;
-        _shieldActive = false;
+        _events  = raw
+            .map((e) => NewsEvent.fromJson(e as Map<String, dynamic>))
+            .where((e) => e.time.isAfter(DateTime.now()))
+            .toList()
+          ..sort((a, b) => a.time.compareTo(b.time));
+        _loading = false;
       });
-      return;
+    } catch (e) {
+      setState(() { _error = e.toString(); _loading = false; });
     }
-
-    // Find next high-impact event
-    final highImpact = events.where(
-      (e) => e.impact == NewsImpact.high && e.isUpcoming,
-    ).toList();
-
-    final next = highImpact.isNotEmpty ? highImpact.first : events.first;
-    final diff = next.scheduledAt.difference(DateTime.now());
-    final remaining = diff.isNegative ? Duration.zero : diff;
-    final shieldActive = remaining.inMinutes <= 30 && remaining.inMinutes >= 0;
-
-    setState(() {
-      _initialized = true;
-      _eventTitle = next.title;
-      _eventCategory = next.currency;
-      _remaining = remaining;
-      _shieldActive = shieldActive;
-    });
-  }
-
-  String _fmt(Duration d) {
-    if (d.inSeconds <= 0) return 'NOW';
-    final h = d.inHours;
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    if (h > 0) return '${h}h ${m}m';
-    return '${m}m ${s}s';
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NewsEventsProvider>(
-      builder: (ctx, provider, _) {
-        // Sync when provider updates
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _updateFromProvider(provider);
-        });
+    if (_loading) return const _ShimmerList();
+    if (_error != null) {
+      return _ErrorTile(message: _error!, onRetry: _load);
+    }
+    if (_events.isEmpty) {
+      return const _EmptyTile();
+    }
 
-        if (!_initialized || provider.upcomingEvents.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        final accent = _shieldActive ? _kRed : _kGold;
-        final accentDim = _shieldActive ? _kRedDim : const Color(0xFF3D2800);
-
-        return GestureDetector(
-          onTap: () => Navigator.pushNamed(context, AppRoutes.home),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: _shieldActive
-                  ? _kRedDim.withOpacity(0.6)
-                  : _kCard,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: accent.withOpacity(0.4),
-                width: _shieldActive ? 1.5 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                // Shield / clock icon
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: accentDim,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: accent.withOpacity(0.3)),
-                  ),
-                  child: Icon(
-                    _shieldActive
-                        ? Icons.shield_rounded
-                        : Icons.schedule_rounded,
-                    color: accent,
-                    size: 16,
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Event info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [
-                        if (_shieldActive) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: _kRedDim,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                  color: _kRed.withOpacity(0.4)),
-                            ),
-                            child: const Text('SHIELD ACTIVE',
-                                style: TextStyle(
-                                    color: _kRed,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8)),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        if (_eventCategory.isNotEmpty)
-                          Text(_eventCategory,
-                              style: TextStyle(
-                                  color: accent,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700)),
-                      ]),
-                      const SizedBox(height: 2),
-                      Text(
-                        _eventTitle,
-                        style: const TextStyle(
-                            color: _kText,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Countdown
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _fmt(_remaining),
-                      style: TextStyle(
-                          color: accent,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          fontFeatures: const [
-                            FontFeature.tabularFigures()
-                          ]),
-                    ),
-                    Text(
-                      _shieldActive ? 'pause trading' : 'until event',
-                      style: const TextStyle(
-                          color: _kSubtext,
-                          fontSize: 9),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(onRefresh: _load),
+        ..._events.take(5).map((e) => _EventTile(event: e)),
+      ],
     );
   }
 }
 
+// ── Section header ────────────────────────────────────────────────────────────
+class _SectionHeader extends StatelessWidget {
+  final VoidCallback onRefresh;
+  const _SectionHeader({required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+      child: Row(
+        children: [
+          const Icon(Icons.calendar_today_rounded,
+              size: 16, color: AppColors.textSecondary),
+          const SizedBox(width: 8),
+          const Text('Upcoming Events',
+              style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600)),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded,
+                size: 18, color: AppColors.textSecondary),
+            onPressed: onRefresh,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Single event tile ─────────────────────────────────────────────────────────
+class _EventTile extends StatelessWidget {
+  final NewsEvent event;
+  const _EventTile({required this.event});
+
+  Color get _impactColor => switch (event.impact) {
+    NewsImpact.high   => AppColors.danger,
+    NewsImpact.medium => _kAmber,
+    NewsImpact.low    => _kGreen,
+  };
+
+  String get _impactLabel => switch (event.impact) {
+    NewsImpact.high   => 'HIGH',
+    NewsImpact.medium => 'MED',
+    NewsImpact.low    => 'LOW',
+  };
+
+  String _countdown() {
+    final diff = event.time.difference(DateTime.now());
+    if (diff.isNegative) return 'Live';
+    final h = diff.inHours;
+    final m = diff.inMinutes % 60;
+    final s = diff.inSeconds % 60;
+    if (h > 0) return '${h}h ${m}m';
+    if (m > 0) return '${m}m ${s}s';
+    return '${s}s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bg1,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.bg3),
+      ),
+      child: Row(
+        children: [
+          // Impact badge
+          Container(
+            width: 38,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: _impactColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            alignment: Alignment.center,
+            child: Text(_impactLabel,
+                style: TextStyle(
+                    color: _impactColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 10),
+          // Currency chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: _kBlue.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(event.currency,
+                style: const TextStyle(
+                    color: _kBlue, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 10),
+          // Title
+          Expanded(
+            child: Text(event.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: AppColors.textPrimary, fontSize: 13)),
+          ),
+          const SizedBox(width: 8),
+          // Countdown
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(_countdown(),
+                  style: TextStyle(
+                      color: event.impact == NewsImpact.high
+                          ? AppColors.danger
+                          : AppColors.primary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold)),
+              if (event.forecast != null)
+                Text('F: ${event.forecast}',
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 10)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Loading shimmer list ───────────────────────────────────────────────────────
+class _ShimmerList extends StatelessWidget {
+  const _ShimmerList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        3,
+        (_) => Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          height: 56,
+          decoration: BoxDecoration(
+            color: AppColors.bg2,
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Error tile ────────────────────────────────────────────────────────────────
+class _ErrorTile extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _ErrorTile({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: AppColors.danger, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text('Could not load events',
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 13)),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Retry',
+                style: TextStyle(color: AppColors.primary, fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+class _EmptyTile extends StatelessWidget {
+  const _EmptyTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.all(24),
+      child: Center(
+        child: Text('No upcoming events',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+      ),
+    );
+  }
+}

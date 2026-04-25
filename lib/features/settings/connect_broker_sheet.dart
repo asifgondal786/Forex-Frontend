@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/account_connection_provider.dart';
+import '../../providers/broker_provider.dart';
 import '../../services/api_service.dart';
 
 class ConnectBrokerSheet extends StatefulWidget {
