@@ -1,6 +1,6 @@
-// lib/features/settings/connect_broker_sheet.dart
+ï»¿// lib/features/settings/connect_broker_sheet.dart
 //
-// Bottom sheet for connecting an OANDA live trading account.
+// Bottom sheet for connecting an Pepperstone live trading account.
 // Posts credentials to /v1/api/accounts/connect/forex.
 // On success: updates BrokerProvider ? home card shows live balance.
 
@@ -13,7 +13,7 @@ import '../../services/api_service.dart';
 class ConnectBrokerSheet extends StatefulWidget {
   const ConnectBrokerSheet({super.key});
 
-  /// Convenience launcher — call from any screen.
+  /// Convenience launcher â€” call from any screen.
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
@@ -70,15 +70,14 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
       final provider = context.read<BrokerProvider>();
 
       // connectForexAccount maps to POST /v1/api/accounts/connect/forex
-      // username = OANDA Account ID, password = API Key
+      // username = Pepperstone Account ID, password = API Key
       // (matches backend expectation per roadmap)
-      final connection = await api.connectForexAccount(
+      await provider.connect(
+        'Pepperstone',
         _acctCtrl.text.trim(),
-        _apiKeyCtrl.text.trim(),
+        _acctCtrl.text.trim(),
+        isLive: true,
       );
-
-      // Update provider so HomeScreen live balance card refreshes
-      await provider.loadConnections();
 
       setState(() {
         _success   = true;
@@ -139,7 +138,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
                       ),
                     ),
                     Text(
-                      'OANDA live trading account',
+                      'Pepperstone live trading account',
                       style: TextStyle(color: _kSubtext, fontSize: 12),
                     ),
                   ],
@@ -185,14 +184,14 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
               const SizedBox(height: 16),
             ],
 
-            // -- OANDA Account ID -----------------------------------------
-            _FieldLabel('OANDA Account ID'),
+            // -- Pepperstone Account ID -----------------------------------------
+            _FieldLabel('Pepperstone Account ID'),
             const SizedBox(height: 6),
             TextFormField(
               controller: _acctCtrl,
               style: const TextStyle(color: _kText, fontSize: 14),
               decoration: _inputDeco(
-                hint: '001-001-12345678-001',
+                hint: 'your-account-id',
                 icon: Icons.badge_outlined,
               ),
               keyboardType: TextInputType.text,
@@ -206,15 +205,15 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             ),
             const SizedBox(height: 14),
 
-            // -- OANDA API Key --------------------------------------------
-            _FieldLabel('OANDA API Key'),
+            // -- Pepperstone API Key --------------------------------------------
+            _FieldLabel('Pepperstone API Key'),
             const SizedBox(height: 6),
             TextFormField(
               controller: _apiKeyCtrl,
               style: const TextStyle(color: _kText, fontSize: 14),
               obscureText: _obscureKey,
               decoration: _inputDeco(
-                hint: 'Paste your OANDA v20 API key',
+                hint: 'Paste your Pepperstone v20 API key',
                 icon: Icons.key_rounded,
               ).copyWith(
                 suffixIcon: IconButton(
@@ -236,7 +235,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
                   return 'API key is required';
                 }
                 if (v.trim().length < 20) {
-                  return 'API key looks too short — check and try again';
+                  return 'API key looks too short â€” check and try again';
                 }
                 return null;
               },
@@ -318,10 +317,10 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             Center(
               child: TextButton(
                 onPressed: () {
-                  // openLink handled by host — launches OANDA API key page
+                  // openLink handled by host â€” launches Pepperstone API key page
                 },
                 child: const Text(
-                  'How to get an OANDA API key ?',
+                  'How to get an Pepperstone API key ?',
                   style: TextStyle(color: _kSubtext, fontSize: 12),
                 ),
               ),
@@ -377,3 +376,5 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       );
 }
+
+

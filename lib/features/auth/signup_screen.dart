@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -21,6 +21,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final SecurityService _securityService = SecurityService();
   final ApiService _apiService = ApiService();
   final FirebaseService _firebaseService = FirebaseService();
   final _titleController = TextEditingController();
@@ -154,7 +155,7 @@ class _SignupScreenState extends State<SignupScreen> {
             },
           );
           await _firebaseService.createUserDocument(appUser);
-          await SecurityService.saveTradePin(_tradePinController.text.trim());
+          await _securityService.saveTradePin(_tradePinController.text.trim());
           var verificationMessage =
               'Account created! Verification email sent to ${user.email ?? normalizedEmail}.';
           try {
@@ -204,7 +205,7 @@ class _SignupScreenState extends State<SignupScreen> {
           );
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRoutes.root,
+            AppRoutes.shell,
             (route) => false,
           );
         } else {
@@ -663,12 +664,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             height: 54,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _handleSignup,
-                              style: AppTheme.glassElevatedButtonStyle(
-                                tintColor: const Color(0xFF3B82F6),
-                                foregroundColor: Colors.white,
-                                borderRadius: 12,
-                                elevation: _isLoading ? 0 : 4,
-                              ),
+                              style: AppTheme.glassElevatedButtonStyle(color: AppTheme.primary),
                               child: _isLoading
                                   ? SizedBox(
                                       height: 24,
@@ -880,4 +876,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
+
+
+
 

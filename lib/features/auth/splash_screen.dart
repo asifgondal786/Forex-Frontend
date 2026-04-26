@@ -3,6 +3,7 @@ import '../../core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/models/app_models.dart';
 import 'login_screen.dart';
 import '../app_shell.dart';
 
@@ -35,13 +36,13 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
     final auth = context.read<AuthProvider>();
     // Wait for auth to resolve
-    if (auth.status == AuthStatus.unknown) {
+    if (auth.status == AuthStatus.loading) {
       await Future.delayed(const Duration(milliseconds: 500));
     }
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => auth.isAuthenticated ? const AppShell() : const LoginScreen(),
+        builder: (_) => auth.isAuthenticated ? const AppShell() : LoginScreen(onLoginSuccess: () {}),
       ),
     );
   }
@@ -69,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
                   width: 100, height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: AppTheme.primaryGradient,
+                    gradient: const LinearGradient(colors: [Color(0xFF00D4AA), Color(0xFF00A886)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primary.withAlpha(100),
@@ -113,3 +114,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
+
+

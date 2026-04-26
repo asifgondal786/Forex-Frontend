@@ -1,6 +1,7 @@
-import 'package:shared_preferences/shared_preferences.dart';
+﻿import 'package:shared_preferences/shared_preferences.dart';
 
 class SecurityLockoutService {
+  static int failedAttempts = 0;
   static const int _attemptsPerBundle = 5;
   static const List<Duration> _lockDurations = [
     Duration(minutes: 30),
@@ -143,4 +144,5 @@ class LockoutState {
     required this.bundlesUsed,
   });
 }
+
 

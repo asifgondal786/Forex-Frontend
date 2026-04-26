@@ -1,4 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'providers/mode_provider.dart';
+import 'services/firebase_service.dart';
+import 'core/models/app_models.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -26,11 +29,13 @@ class TajirApp extends StatelessWidget {
     final api = ApiService();
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        Provider<ApiService>(create: (_) => api),
+        ChangeNotifierProvider(create: (_) => ModeProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider(FirebaseService())),
         ChangeNotifierProvider(create: (_) => AgentProvider(api)),
         ChangeNotifierProvider(create: (_) => BrokerProvider()),
-        ChangeNotifierProvider(create: (_) => MarketProvider()),
-        ChangeNotifierProvider(create: (_) => SignalProvider()),
+        ChangeNotifierProvider(create: (_) => MarketProvider(api)),
+        ChangeNotifierProvider(create: (_) => SignalProvider(api)),
       ],
       child: MaterialApp(
         title: 'Tajir',
@@ -41,4 +46,9 @@ class TajirApp extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
 

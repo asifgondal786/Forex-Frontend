@@ -35,7 +35,7 @@ class _AgentScreenState extends State<AgentScreen> {
     });
     _scrollDown();
     try {
-      final data = await context.read<ApiService>().sendNlpChat(_nlpCtrl.text.trim()), userId: _userId);
+      final data = await context.read<ApiService>().sendNlpChat(msg);
       final reply = data['response'] as String? ?? data['message'] as String? ?? 'No response.';
       setState(() => _chatHistory.add({'role': 'assistant', 'content': reply}));
     } catch (e) {
@@ -569,7 +569,7 @@ class _RiskPanelState extends State<_RiskPanel> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.cardDecoration(),
       child: Column(
         children: [
           GestureDetector(
@@ -838,6 +838,10 @@ class _NlpChat extends StatelessWidget {
     );
   }
 }
+
+
+
+
 
 
 

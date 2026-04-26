@@ -1,6 +1,6 @@
-// lib/features/settings/settings_screen.dart
+﻿// lib/features/settings/settings_screen.dart
 //
-// 4-section Settings: Broker (OANDA), Risk Limits, Security, Account.
+// 4-section Settings: Broker (Pepperstone), Risk Limits, Security, Account.
 // ConnectBrokerSheet is the gate for both trading modes.
 
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -13,7 +13,7 @@ import '../../providers/broker_provider.dart';
 import '../../core/routes/app_routes.dart';
 import 'connect_broker_sheet.dart';
 
-// palette — matches the rest of the app
+// palette â€” matches the rest of the app
 const _kBg      = Color(0xFF0A0E1A);
 const _kCard    = Color(0xFF161D2E);
 const _kBorder  = Color(0xFF1E2A3D);
@@ -32,9 +32,8 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accountProvider = context.watch<BrokerProvider>();
-    final riskProvider    = context.watch<RiskProvider>();
     final account         = accountProvider.selectedAccount;
-    final isConnected     = account?.status == String.connected;
+    final isConnected     = account?.connected == true;
 
     return Scaffold(
       backgroundColor: _kBg,
@@ -59,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
-          // ── Section 1: Broker ──────────────────────────────────────────
+          // â”€â”€ Section 1: Broker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           _SectionHeader(
             icon: Icons.account_balance_rounded,
             label: 'Broker Connection',
@@ -81,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
           ],
           const SizedBox(height: 20),
 
-          // ── Section 2: Risk Limits ─────────────────────────────────────
+          // â”€â”€ Section 2: Risk Limits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           _SectionHeader(
             icon: Icons.shield_rounded,
             label: 'Risk Guardian Limits',
@@ -93,14 +92,14 @@ class SettingsScreen extends StatelessWidget {
             iconColor: _kAmber,
             title: 'Configure limits',
             subtitle:
-                'Daily loss ${riskProvider.dailyLimitPct.toStringAsFixed(1)}% '
-                '· Max trades ${riskProvider.maxOpenTrades} '
-                '· Risk/trade ${riskProvider.riskPerTradePct.toStringAsFixed(1)}%',
-            onTap: () => _showRiskSheet(context, riskProvider),
+                'Daily loss 2.0% · Max trades 5 · Risk/trade 1.0%',
+
+
+            onTap: () => _showRiskSheet(context, null),
           ),
           const SizedBox(height: 20),
 
-          // ── Section 3: Security ────────────────────────────────────────
+          // â”€â”€ Section 3: Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           _SectionHeader(
             icon: Icons.lock_rounded,
             label: 'Security',
@@ -118,7 +117,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // ── Section 4: Account ─────────────────────────────────────────
+          // â”€â”€ Section 4: Account â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           _SectionHeader(
             icon: Icons.person_rounded,
             label: 'Account',
@@ -138,7 +137,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ── Disconnect confirm ─────────────────────────────────────────────────
+  // â”€â”€ Disconnect confirm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _confirmDisconnect(
     BuildContext context,
     BrokerProvider provider,
@@ -179,12 +178,12 @@ class SettingsScreen extends StatelessWidget {
     await provider.disconnect(accountId);
   }
 
-  // ── Risk sheet ─────────────────────────────────────────────────────────
+  // â”€â”€ Risk sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _showRiskSheet(
-      BuildContext context, RiskProvider riskProvider) async {
-    var dailyLimit    = riskProvider.dailyLimitPct;
-    var maxTrades     = riskProvider.maxOpenTrades.toDouble();
-    var riskPerTrade  = riskProvider.riskPerTradePct;
+      BuildContext context, dynamic dynamic) async {
+    var dailyLimit = 2.0;
+    var maxTrades = 5.0;
+    var riskPerTrade = 1.0;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -260,9 +259,6 @@ class SettingsScreen extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () {
-                    riskProvider.updateDailyLimit(dailyLimit);
-                    riskProvider.updateMaxOpenTrades(maxTrades.round());
-                    riskProvider.updateRiskPerTrade(riskPerTrade);
                     Navigator.pop(ctx);
                   },
                   style: FilledButton.styleFrom(
@@ -289,7 +285,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ── Logout ─────────────────────────────────────────────────────────────
+  // â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _logout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -327,14 +323,14 @@ class SettingsScreen extends StatelessWidget {
 
     if (context.mounted) {
       Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.root, (route) => false);
+          context, AppRoutes.login, (route) => false);
     }
   }
 }
 
-// ── Broker connection tile ─────────────────────────────────────────────────
+// â”€â”€ Broker connection tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _BrokerConnectionTile extends StatelessWidget {
-  final Object? account;
+  final BrokerAccount? account;
   final bool isConnected;
   final bool isLoading;
   final VoidCallback onTap;
@@ -382,7 +378,7 @@ class _BrokerConnectionTile extends StatelessWidget {
               title: Text(
                 isConnected
                     ? account?.broker ?? 'Broker connected'
-                    : 'Connect OANDA account',
+                    : 'Connect Pepperstone account',
                 style: const TextStyle(
                   color: _kText,
                   fontWeight: FontWeight.w700,
@@ -391,8 +387,8 @@ class _BrokerConnectionTile extends StatelessWidget {
               ),
               subtitle: Text(
                 isConnected
-                    ? '${account?.currency} ${account?.balance.toStringAsFixed(2)} '
-                      '· Acct ${account?.accountNumber}'
+                    ? '${account?.currency} ${account?.displayBalance ?? '0.00'} '
+                      'Â· Acct ${account?.id ?? ''}'
                     : 'Required for both trading modes',
                 style: const TextStyle(color: _kSubtext, fontSize: 12),
               ),
@@ -427,7 +423,7 @@ class _BrokerConnectionTile extends StatelessWidget {
       );
 }
 
-// ── Reusable components ────────────────────────────────────────────────────
+// â”€â”€ Reusable components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -595,3 +591,11 @@ class _ErrorBanner extends StatelessWidget {
         ),
       );
 }
+
+
+
+
+
+
+
+

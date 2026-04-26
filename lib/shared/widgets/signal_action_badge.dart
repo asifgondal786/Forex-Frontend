@@ -1,32 +1,32 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
-enum SignalAction { buy, sell, hold }
-
 class SignalActionBadge extends StatelessWidget {
-  final SignalAction action;
-
-  const SignalActionBadge({super.key, required this.action});
+  final String action;
+  final bool large;
+  const SignalActionBadge({super.key, required this.action, this.large = false});
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (action) {
-      SignalAction.buy  => AppTheme.success,
-      SignalAction.sell => AppTheme.danger,
-      SignalAction.hold => AppTheme.gold,
-    };
-    final label = action.name.toUpperCase();
-
+    final a = action.toLowerCase();
+    final color = a == 'buy' ? AppTheme.primary : a == 'sell' ? AppTheme.danger : AppTheme.gold;
+    final icon  = a == 'buy' ? Icons.trending_up_rounded : a == 'sell' ? Icons.trending_down_rounded : Icons.pause_rounded;
+    final size  = large ? 14.0 : 11.0;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: large ? 12 : 8, vertical: large ? 6 : 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        border: Border.all(color: color),
         borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
-      child: Text(label,
-          style: TextStyle(color: color,
-              fontSize: 11, fontWeight: FontWeight.bold)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: size + 4),
+          const SizedBox(width: 4),
+          Text(action.toUpperCase(), style: TextStyle(color: color, fontSize: size, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+        ],
+      ),
     );
   }
 }

@@ -1,7 +1,10 @@
 ﻿import 'package:flutter/material.dart';
+import '../../core/models/app_models.dart';
 import '../../core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/app_models.dart';
 import 'package:intl/intl.dart';
+import '../../core/models/app_models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/market_provider.dart';
 import '../../providers/signal_provider.dart';
@@ -195,7 +198,7 @@ class _PriceChip extends StatelessWidget {
       child: Container(
         width: 130,
         padding: const EdgeInsets.all(12),
-        decoration: AppTheme.cardDecoration,
+        decoration: AppTheme.cardDecoration(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -239,7 +242,7 @@ class _SignalCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -355,7 +358,7 @@ class _SentimentCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.cardDecoration(),
       child: Row(
         children: [
           Column(
@@ -481,7 +484,7 @@ class _NewsSection extends StatelessWidget {
         else if (news.isEmpty)
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: AppTheme.cardDecoration,
+            decoration: AppTheme.cardDecoration(),
             child: const Center(
               child: Text('No news available',
                   style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
@@ -512,7 +515,7 @@ class _NewsItem extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.cardDecoration(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -546,3 +549,6 @@ class _NewsItem extends StatelessWidget {
     );
   }
 }
+
+
+

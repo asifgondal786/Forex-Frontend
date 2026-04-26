@@ -1,4 +1,4 @@
-// lib/features/dashboard/widgets/notifications_sheet.dart
+﻿// lib/features/dashboard/widgets/notifications_sheet.dart
 // Bottom sheet showing push notification history.
 // Uses FirebaseService (not deleted LiveUpdatesService / HeaderProvider).
 
@@ -12,7 +12,7 @@ import '../../../services/firebase_service.dart';
 class NotificationsSheet extends StatefulWidget {
   const NotificationsSheet({super.key});
 
-  /// Convenience method — call from any screen to show the sheet.
+  /// Convenience method â€” call from any screen to show the sheet.
   static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -27,7 +27,7 @@ class NotificationsSheet extends StatefulWidget {
 }
 
 class _NotificationsSheetState extends State<NotificationsSheet> {
-  List<AppNotification> _notifications = [];
+  List<Map<String, dynamic>> _notifications = [];
   bool _loading = true;
 
   @override
@@ -46,7 +46,7 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
         _loading = false;
       });
     } catch (_) {
-      // Fallback — show empty gracefully
+      // Fallback â€” show empty gracefully
       setState(() => _loading = false);
     }
   }
@@ -57,7 +57,7 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
     setState(() => _notifications = []);
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -139,19 +139,19 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
   }
 }
 
-// ── Notification tile ─────────────────────────────────────────────────────────
+// â”€â”€ Notification tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _NotificationTile extends StatelessWidget {
-  final AppNotification n;
+  final Map<String, dynamic> n;
   const _NotificationTile({required this.n});
 
-  Color get _iconColor => switch (n.type) {
+  Color get _iconColor => switch (n['category']) {
     'signal' => AppColors.gold,
     'trade'  => AppColors.success,
     'alert'  => AppColors.danger,
     _        => AppColors.primary,
   };
 
-  IconData get _icon => switch (n.type) {
+  IconData get _icon => switch (n['category']) {
     'signal' => Icons.trending_up_rounded,
     'trade'  => Icons.check_circle_outline_rounded,
     'alert'  => Icons.warning_amber_rounded,
@@ -171,7 +171,7 @@ class _NotificationTile extends StatelessWidget {
         ),
         child: Icon(_icon, color: _iconColor, size: 20),
       ),
-      title: Text(n.title,
+      title: Text(n['title'] as String? ?? '',
           style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
@@ -179,21 +179,21 @@ class _NotificationTile extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (n.body.isNotEmpty) ...[
+          if ((n['message'] as String? ?? '').isNotEmpty) ...[
             const SizedBox(height: 2),
-            Text(n.body,
+            Text((n['message'] as String? ?? ''),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 13)),
           ],
           const SizedBox(height: 4),
-          Text(_timeAgo(n.receivedAt),
+          Text(_timeAgo((n['timestamp'] != null ? DateTime.tryParse(n['timestamp'].toString()) : null)),
               style: const TextStyle(
                   color: AppColors.textSecondary, fontSize: 11)),
         ],
       ),
-      isThreeLine: n.body.isNotEmpty,
+      isThreeLine: (n['message'] as String? ?? '').isNotEmpty,
     );
   }
 
@@ -207,7 +207,7 @@ class _NotificationTile extends StatelessWidget {
   }
 }
 
-// ── Empty state ───────────────────────────────────────────────────────────────
+// â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -233,3 +233,6 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
+
+
+

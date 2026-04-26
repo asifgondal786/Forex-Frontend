@@ -1,7 +1,10 @@
 ﻿import 'package:flutter/material.dart';
+import '../../core/models/app_models.dart';
 import '../../core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/app_models.dart';
 import 'package:intl/intl.dart';
+import '../../core/models/app_models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/market_provider.dart';
 import '../../providers/signal_provider.dart';
@@ -324,7 +327,7 @@ class _IndicatorsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: AppTheme.cardDecoration,
+      decoration: AppTheme.cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -377,3 +380,9 @@ class _IndicatorRow extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+

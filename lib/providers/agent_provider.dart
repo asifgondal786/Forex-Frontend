@@ -1,5 +1,6 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
+import '../core/models/app_models.dart';
 import '../services/api_service.dart';
 
 enum AgentMode { off, semiAuto, fullAuto }
@@ -144,7 +145,7 @@ class AgentProvider extends ChangeNotifier {
         _pollTimer?.cancel();
       } else {
         final modeStr = newMode == AgentMode.fullAuto ? 'full_auto' : 'semi_auto';
-        await _api.startAgent({'mode': modeStr, ...?params});
+        await _api.startAgent();
         _startPolling();
       }
       _mode = newMode;
@@ -208,3 +209,4 @@ class AgentProvider extends ChangeNotifier {
     super.dispose();
   }
 }
+

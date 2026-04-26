@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../core/models/app_models.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/app_models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/market_provider.dart';
 
@@ -22,7 +24,7 @@ class PriceTickerWidget extends StatelessWidget {
                   itemCount: market.prices.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemBuilder: (_, i) {
-                    final p = market.prices[i];
+                    final p = market.prices.values.elementAt(i);
                     return _PriceTile(price: p);
                   },
                 ),
@@ -57,13 +59,13 @@ class PriceTickerWidget extends StatelessWidget {
 }
 
 class _PriceTile extends StatelessWidget {
-  final PriceData price;
+  final PriceData? price;
 
-  const _PriceTile({required this.price});
+  const _PriceTile({this.price});
 
   @override
   Widget build(BuildContext context) {
-    final isUp = price.change >= 0;
+    final isUp = (price?.change ?? 0) >= 0;
     final changeColor = isUp ? AppTheme.success : AppTheme.danger;
     final changeIcon = isUp ? Icons.arrow_drop_up : Icons.arrow_drop_down;
 
@@ -80,7 +82,7 @@ class _PriceTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            price.pair,
+            (price?.pair ?? ""),
             style: const TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 10,
@@ -90,7 +92,7 @@ class _PriceTile extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            price.bid.toStringAsFixed(price.pair.contains('JPY') ? 3 : 5),
+            (price?.bid ?? 0).toStringAsFixed((price?.pair ?? "").contains('JPY') ? 3 : 5),
             style: const TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 13,
@@ -102,7 +104,7 @@ class _PriceTile extends StatelessWidget {
             children: [
               Icon(changeIcon, color: changeColor, size: 14),
               Text(
-                '${isUp ? '+' : ''}${price.changePercent.toStringAsFixed(2)}%',
+                '${isUp ? '+' : ''}${(price?.changePercent ?? 0).toStringAsFixed(2)}%',
                 style: TextStyle(
                   color: changeColor,
                   fontSize: 10,
@@ -116,3 +118,7 @@ class _PriceTile extends StatelessWidget {
     );
   }
 }
+
+
+
+

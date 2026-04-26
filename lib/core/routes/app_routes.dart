@@ -1,4 +1,4 @@
-class AppRoutes {
+﻿class AppRoutes {
   static const splash    = '/';
   static const login     = '/login';
   static const signup    = '/signup';
@@ -10,4 +10,6 @@ class AppRoutes {
   static const charts    = '/charts';
   static const agent     = '/agent';
   static const settings  = '/settings';
+  static const home = shell;
 }
+

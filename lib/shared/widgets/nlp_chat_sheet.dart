@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../core/models/app_models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -153,7 +154,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  gradient: AppTheme.purpleGradient,
+                  gradient: const LinearGradient(colors: [Color(0xFF7C5CFC), Color(0xFF5B3FE0)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.auto_awesome_rounded,
@@ -257,7 +258,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                gradient: AppTheme.purpleGradient,
+                gradient: const LinearGradient(colors: [Color(0xFF7C5CFC), Color(0xFF5B3FE0)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.auto_awesome_rounded,
@@ -313,7 +314,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              gradient: AppTheme.purpleGradient,
+              gradient: const LinearGradient(colors: [Color(0xFF7C5CFC), Color(0xFF5B3FE0)], begin: Alignment.topLeft, end: Alignment.bottomRight),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.auto_awesome_rounded,
@@ -383,7 +384,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                gradient: AppTheme.purpleGradient,
+                gradient: const LinearGradient(colors: [Color(0xFF7C5CFC), Color(0xFF5B3FE0)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.send_rounded,
@@ -457,3 +458,6 @@ class _ChatMessage {
     this.isError = false,
   });
 }
+
+
+

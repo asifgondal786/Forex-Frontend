@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -259,12 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 54,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _handleLogin,
-                              style: AppTheme.glassElevatedButtonStyle(
-                                tintColor: const Color(0xFF3B82F6),
-                                foregroundColor: Colors.white,
-                                borderRadius: 12,
-                                elevation: _isLoading ? 0 : 4,
-                              ),
+                              style: AppTheme.glassElevatedButtonStyle(color: AppTheme.primary),
                               child: _isLoading
                                   ? SizedBox(
                                       height: 24,
@@ -613,3 +608,6 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
         ],
       );
 }
+
+
+
