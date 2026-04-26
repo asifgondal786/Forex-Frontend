@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:forex_companion/config/theme.dart';
+﻿import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData icon;
@@ -21,39 +21,28 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(48),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: AppTheme.bg2,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 64,
-                color: Colors.grey.shade400,
-              ),
+              child: Icon(icon, size: 64, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 24),
             Text(
               title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade700,
-              ),
+              style: AppTheme.headingMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade500,
-              ),
+              style: AppTheme.bodyMuted,
               textAlign: TextAlign.center,
             ),
             if (actionLabel != null && onAction != null) ...[
@@ -62,13 +51,7 @@ class EmptyState extends StatelessWidget {
                 onPressed: onAction,
                 icon: const Icon(Icons.add),
                 label: Text(actionLabel!),
-                style: AppTheme.glassElevatedButtonStyle(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
-                  borderRadius: 12,
-                ),
+                style: AppTheme.glassElevatedButtonStyle(),
               ),
             ],
           ],
@@ -77,4 +60,3 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
-

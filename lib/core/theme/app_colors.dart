@@ -1,41 +1,56 @@
-// lib/core/theme/app_colors.dart
-// Alias layer — keeps AppColors.X compiling while screens migrate to AppTheme.X
-// DO NOT import config/theme.dart — that file is deleted.
-// This file's ONLY job is to re-export AppTheme constants under the old names.
-
+﻿import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
 class AppColors {
-  AppColors._(); // prevent instantiation
+  // Direct const-compatible color values (use these inside const widgets)
+  static const Color primary       = AppTheme.primary;
+  static const Color accent        = AppTheme.accent;
+  static const Color gold          = AppTheme.gold;
+  static const Color danger        = AppTheme.danger;
+  static const Color success       = AppTheme.success;
+  static const Color warning       = AppTheme.warning;
+  static const Color bg0           = AppTheme.bg0;
+  static const Color bg1           = AppTheme.bg1;
+  static const Color bg2           = AppTheme.bg2;
+  static const Color bg3           = AppTheme.bg3;
+  static const Color textPrimary   = AppTheme.textPrimary;
+  static const Color textSecondary = AppTheme.textSecondary;
+  static const Color textMuted      = AppTheme.textSecondary;
 
-  // ── Primary palette ────────────────────────────────────────────────────────
-  static const primary        = AppTheme.primary;       // #00D4AA teal
-  static const accent         = AppTheme.accent;        // #7C5CFC purple
-  static const gold           = AppTheme.gold;          // #FFB800
-  static const danger         = AppTheme.danger;        // #FF4757
-  static const success        = AppTheme.success;       // #2ED573
-  static const warning        = AppTheme.warning;       // #FF6B35
+  // Named aliases (also const)
+  static const Color primaryBlue   = AppTheme.primary;
+  static const Color primaryGreen  = AppTheme.success;
+  static const Color primaryGold   = AppTheme.gold;
+  static const Color primaryRed    = AppTheme.danger;
+  static const Color primaryOrange = AppTheme.warning;
+  static const Color primaryCyan   = AppTheme.accent;
 
-  // ── Background layers ──────────────────────────────────────────────────────
-  static const bg0            = AppTheme.bg0;           // #090E1A  scaffold
-  static const bg1            = AppTheme.bg1;           // #0D1421  card
-  static const bg2            = AppTheme.bg2;           // #111927  elevated card
-  static const bg3            = AppTheme.bg3;           // #1A2235  input / chip
+  // UI semantic colors
+  static const Color border        = Color(0xFF2A3550);
+  static const Color borderColor   = Color(0xFF2A3550);
+  static const Color divider       = Color(0xFF2A3550);
+  static const Color cardBg        = AppTheme.bg1;
+  static const Color inputFill     = AppTheme.bg2;
+  static const Color iconColor     = AppTheme.textSecondary;
+  static const Color activeTab     = AppTheme.primary;
+  static const Color inactiveTab   = AppTheme.textSecondary;
 
-  // ── Text ───────────────────────────────────────────────────────────────────
-  static const textPrimary    = AppTheme.textPrimary;   // #EEF2FF
-  static const textSecondary  = AppTheme.textSecondary; // #8892B0
+  // Trading semantic colors
+  static const Color buyColor      = AppTheme.success;
+  static const Color sellColor     = AppTheme.danger;
+  static const Color profitColor   = AppTheme.success;
+  static const Color lossColor     = AppTheme.danger;
+  static const Color neutralColor  = AppTheme.warning;
+  static const Color chartLine     = AppTheme.primary;
+  static const Color stopButton    = AppTheme.danger;
+  static const Color priorityHigh  = AppTheme.danger;
+  static const Color priorityMedium = AppTheme.warning;
+  static const Color priorityLow   = AppTheme.success;
 
-  // ── Legacy aliases (old names → new values) ────────────────────────────────
-  static const darkBlue         = AppTheme.bg0;
-  static const primaryBlue      = AppTheme.primary;
-  static const primaryGreen     = AppTheme.success;
-  static const successGreen     = AppTheme.success;
-  static const errorRed         = AppTheme.danger;
-  static const backgroundDark   = AppTheme.bg0;
-  static const cardDark         = AppTheme.bg1;
-  static const textMuted        = AppTheme.textSecondary;
-  static const surface          = AppTheme.bg1;
-  static const surfaceVariant   = AppTheme.bg2;
-  static const border           = AppTheme.bg3;
+  // Non-const (require withOpacity etc)
+  static Color get shadowColor     => Colors.black54;
+  static Color get overlayColor    => Colors.black87;
+  static Color get shimmerBase     => AppTheme.bg2;
+  static Color get shimmerHigh     => AppTheme.bg3;
 }
+

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
 import '../../providers/agent_provider.dart';
 import '../../services/api_service.dart';
 
@@ -34,7 +35,7 @@ class _AgentScreenState extends State<AgentScreen> {
     });
     _scrollDown();
     try {
-      final data = await context.read<ApiService>().nlpChat(msg, history: _chatHistory);
+      final data = await context.read<ApiService>().sendNlpChat(_nlpCtrl.text.trim()), userId: _userId);
       final reply = data['response'] as String? ?? data['message'] as String? ?? 'No response.';
       setState(() => _chatHistory.add({'role': 'assistant', 'content': reply}));
     } catch (e) {
@@ -127,7 +128,7 @@ class _AgentScreenState extends State<AgentScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Kill switch — visible when active
+                  // Kill switch â€” visible when active
                   if (agent.isActive) ...[
                     _KillSwitch(
                       isKilling: agent.isKilling,
@@ -174,7 +175,7 @@ class _AgentScreenState extends State<AgentScreen> {
   }
 }
 
-// ── Mode Chip ────────────────────────────────────────────────────────────────
+// â”€â”€ Mode Chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ModeChip extends StatelessWidget {
   final AgentMode mode;
@@ -209,7 +210,7 @@ class _ModeChip extends StatelessWidget {
   }
 }
 
-// ── Mode Selector ────────────────────────────────────────────────────────────
+// â”€â”€ Mode Selector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ModeSelector extends StatelessWidget {
   final AgentMode current;
@@ -316,7 +317,7 @@ class _ModeCard extends StatelessWidget {
   }
 }
 
-// ── Kill Switch ──────────────────────────────────────────────────────────────
+// â”€â”€ Kill Switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _KillSwitch extends StatelessWidget {
   final bool isKilling;
@@ -346,7 +347,7 @@ class _KillSwitch extends StatelessWidget {
                 : const Icon(Icons.stop_circle_outlined, color: AppColors.danger, size: 22),
             const SizedBox(width: 10),
             Text(
-              isKilling ? 'Killing Agent...' : '⚠  KILL SWITCH — Stop All Activity',
+              isKilling ? 'Killing Agent...' : 'âš   KILL SWITCH â€” Stop All Activity',
               style: const TextStyle(
                   fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.danger),
             ),
@@ -357,7 +358,7 @@ class _KillSwitch extends StatelessWidget {
   }
 }
 
-// ── Semi-Auto Section ────────────────────────────────────────────────────────
+// â”€â”€ Semi-Auto Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SemiAutoSection extends StatelessWidget {
   final List<PendingTrade> trades;
@@ -461,7 +462,7 @@ class _PendingTradeCard extends StatelessWidget {
   }
 }
 
-// ── Full-Auto Section ────────────────────────────────────────────────────────
+// â”€â”€ Full-Auto Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _FullAutoSection extends StatelessWidget {
   final List<ActiveTrade> trades;
@@ -550,7 +551,7 @@ class _ActiveTradeRow extends StatelessWidget {
   }
 }
 
-// ── Risk Panel ───────────────────────────────────────────────────────────────
+// â”€â”€ Risk Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _RiskPanel extends StatefulWidget {
   const _RiskPanel();
@@ -697,7 +698,7 @@ class _SliderRow extends StatelessWidget {
   }
 }
 
-// ── NLP Chat ─────────────────────────────────────────────────────────────────
+// â”€â”€ NLP Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _NlpChat extends StatelessWidget {
   final List<Map<String, String>> history;
@@ -837,3 +838,8 @@ class _NlpChat extends StatelessWidget {
     );
   }
 }
+
+
+
+
+

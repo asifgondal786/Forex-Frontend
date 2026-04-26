@@ -31,10 +31,10 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accountProvider = context.watch<AccountConnectionProvider>();
+    final accountProvider = context.watch<BrokerProvider>();
     final riskProvider    = context.watch<RiskProvider>();
     final account         = accountProvider.selectedAccount;
-    final isConnected     = account?.status == AccountConnectionStatus.connected;
+    final isConnected     = account?.status == String.connected;
 
     return Scaffold(
       backgroundColor: _kBg,
@@ -141,7 +141,7 @@ class SettingsScreen extends StatelessWidget {
   // ── Disconnect confirm ─────────────────────────────────────────────────
   Future<void> _confirmDisconnect(
     BuildContext context,
-    AccountConnectionProvider provider,
+    BrokerProvider provider,
     String accountId,
   ) async {
     final confirmed = await showDialog<bool>(
@@ -334,7 +334,7 @@ class SettingsScreen extends StatelessWidget {
 
 // ── Broker connection tile ─────────────────────────────────────────────────
 class _BrokerConnectionTile extends StatelessWidget {
-  final AccountConnection? account;
+  final Object? account;
   final bool isConnected;
   final bool isLoading;
   final VoidCallback onTap;

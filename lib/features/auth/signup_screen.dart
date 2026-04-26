@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:forex_companion/config/theme.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../../services/api_service.dart';
@@ -8,7 +8,7 @@ import '../../services/security_service.dart';
 import '../../core/models/user.dart' as app_user;
 import '../../core/widgets/app_background.dart';
 import '../../core/utils/runtime_url_resolver.dart';
-import '../../routes/app_routes.dart';
+import '../../core/routes/app_routes.dart';
 
 enum _SignupPlan { freeTrial, subscribeNow }
 enum _SignupNotificationChannel { email, mobile, whatsapp }

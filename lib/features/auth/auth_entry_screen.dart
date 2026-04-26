@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../routes/app_routes.dart';
+import '../../core/routes/app_routes.dart';
 import 'auth_action_context.dart';
 import 'auth_gate.dart';
 import 'password_reset_screen.dart';

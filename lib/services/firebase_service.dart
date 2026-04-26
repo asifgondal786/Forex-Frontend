@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_storage/firebase_storage.dart' as storage;
 import 'package:flutter/foundation.dart';
 import '../core/models/user.dart' as app_user;
-import '../core/models/task.dart' as task_model;
 
 class FirebaseService {
   final FirebaseFirestore? _firestore;

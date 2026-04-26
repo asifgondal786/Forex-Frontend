@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -15,9 +15,9 @@ class ApiException implements Exception {
 }
 
 class ApiService {
-  // /api/v1 — public market data, signals, risk, paper trading
+  // /api/v1 â€” public market data, signals, risk, paper trading
   static const String apiV1  = '/api/v1';
-  // /v1/api — authenticated endpoints (accounts, forex, advanced)
+  // /v1/api â€” authenticated endpoints (accounts, forex, advanced)
   static const String apiV1b = '/v1/api';
   static const String apiV1c = '/v1';
 
@@ -55,7 +55,7 @@ class ApiService {
     r'[\u0000-\u001F\u007F\u00A0\u1680\u180E\u2000-\u200F\u2028-\u202F\u205F-\u206F\u3000\uFEFF]',
   );
 
-  // ── Agent controls ────────────────────────────────────────────────────────
+  // â”€â”€ Agent controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<Map<String, dynamic>> fetchAgentStatus() async =>
       await _get('/api/v1/agent/status');
 
@@ -87,7 +87,7 @@ class ApiService {
   Future<Map<String, dynamic>> fetchMarketSentiment() async =>
       await _get('/api/v1/market/sentiment');
 
-  // ── Base URL ──────────────────────────────────────────────────────────────
+  // â”€â”€ Base URL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static String get baseUrl {
     final fromDefine = _baseUrlFromDefine.trim();
     if (fromDefine.isNotEmpty) return _normalizeBaseUrl(fromDefine);
@@ -102,7 +102,7 @@ class ApiService {
 
   final http.Client _client = http.Client();
 
-  // ── Static helpers ────────────────────────────────────────────────────────
+  // â”€â”€ Static helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static String _normalizeBaseUrl(String v) =>
       v.endsWith('/') ? v.substring(0, v.length - 1) : v;
 
@@ -300,7 +300,7 @@ class ApiService {
     throw ApiException(message, response.statusCode);
   }
 
-  // ── Private HTTP helpers ──────────────────────────────────────────────────
+  // â”€â”€ Private HTTP helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<Map<String, dynamic>> _get(String path) async {
     final headers  = await _buildHeaders();
     final response = await _client
@@ -319,7 +319,7 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  // ── Fallback data ─────────────────────────────────────────────────────────
+  // â”€â”€ Fallback data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Map<String, double> _fallbackForexRates() => {
         'EUR/USD': 1.0834, 'GBP/USD': 1.2712, 'USD/JPY': 154.22,
         'USD/PKR': 278.90, 'AUD/USD': 0.6513, 'USD/CAD': 1.3611,
@@ -657,7 +657,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // MARKET DATA ENDPOINTS  (/api/v1 — no auth required)
+  // MARKET DATA ENDPOINTS  (/api/v1 â€” no auth required)
   // =========================================================================
 
   Future<List<Map<String, dynamic>>> fetchMarketPrices({
@@ -764,7 +764,7 @@ class ApiService {
   }
 
   // =========================================================================
-  // FOREX DATA ENDPOINTS  (/v1/api — authenticated)
+  // FOREX DATA ENDPOINTS  (/v1/api â€” authenticated)
   // =========================================================================
 
   Future<Map<String, dynamic>> getForexRates({List<String>? pairs}) async {
@@ -1317,7 +1317,7 @@ class ApiService {
     }
   }
 
-  // ── Public accessors ──────────────────────────────────────────────────────
+  // â”€â”€ Public accessors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<Map<String, String>> authHeaders() => _buildHeaders();
   String get instanceBaseUrl => ApiService.baseUrl;
 

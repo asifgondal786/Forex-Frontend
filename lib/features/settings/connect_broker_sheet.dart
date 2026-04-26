@@ -1,8 +1,8 @@
-﻿// lib/features/settings/connect_broker_sheet.dart
+// lib/features/settings/connect_broker_sheet.dart
 //
 // Bottom sheet for connecting an OANDA live trading account.
 // Posts credentials to /v1/api/accounts/connect/forex.
-// On success: updates AccountConnectionProvider → home card shows live balance.
+// On success: updates BrokerProvider ? home card shows live balance.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +13,7 @@ import '../../services/api_service.dart';
 class ConnectBrokerSheet extends StatefulWidget {
   const ConnectBrokerSheet({super.key});
 
-  /// Convenience launcher — call from any screen.
+  /// Convenience launcher � call from any screen.
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
@@ -67,7 +67,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
 
     try {
       final api      = context.read<ApiService>();
-      final provider = context.read<AccountConnectionProvider>();
+      final provider = context.read<BrokerProvider>();
 
       // connectForexAccount maps to POST /v1/api/accounts/connect/forex
       // username = OANDA Account ID, password = API Key
@@ -110,7 +110,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────────────────
+            // -- Header --------------------------------------------------
             Row(
               children: [
                 Container(
@@ -148,7 +148,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             ),
             const SizedBox(height: 20),
 
-            // ── Success state ────────────────────────────────────────────
+            // -- Success state --------------------------------------------
             if (_success) ...[
               Container(
                 width: double.infinity,
@@ -185,7 +185,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
               const SizedBox(height: 16),
             ],
 
-            // ── OANDA Account ID ─────────────────────────────────────────
+            // -- OANDA Account ID -----------------------------------------
             _FieldLabel('OANDA Account ID'),
             const SizedBox(height: 6),
             TextFormField(
@@ -206,7 +206,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             ),
             const SizedBox(height: 14),
 
-            // ── OANDA API Key ────────────────────────────────────────────
+            // -- OANDA API Key --------------------------------------------
             _FieldLabel('OANDA API Key'),
             const SizedBox(height: 6),
             TextFormField(
@@ -236,14 +236,14 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
                   return 'API key is required';
                 }
                 if (v.trim().length < 20) {
-                  return 'API key looks too short — check and try again';
+                  return 'API key looks too short � check and try again';
                 }
                 return null;
               },
             ),
             const SizedBox(height: 8),
 
-            // ── Security note ────────────────────────────────────────────
+            // -- Security note --------------------------------------------
             Row(
               children: const [
                 Icon(Icons.lock_outline_rounded, color: _kSubtext, size: 12),
@@ -256,7 +256,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             ),
             const SizedBox(height: 16),
 
-            // ── Error ────────────────────────────────────────────────────
+            // -- Error ----------------------------------------------------
             if (_error != null) ...[
               Container(
                 width: double.infinity,
@@ -280,7 +280,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
               const SizedBox(height: 14),
             ],
 
-            // ── Connect button ────────────────────────────────────────────
+            // -- Connect button --------------------------------------------
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -314,14 +314,14 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             ),
             const SizedBox(height: 10),
 
-            // ── How to get API key ────────────────────────────────────────
+            // -- How to get API key ----------------------------------------
             Center(
               child: TextButton(
                 onPressed: () {
-                  // openLink handled by host — launches OANDA API key page
+                  // openLink handled by host � launches OANDA API key page
                 },
                 child: const Text(
-                  'How to get an OANDA API key →',
+                  'How to get an OANDA API key ?',
                   style: TextStyle(color: _kSubtext, fontSize: 12),
                 ),
               ),

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:forex_companion/config/theme.dart';
+﻿import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../theme/app_colors.dart';
 
 class ErrorRetry extends StatelessWidget {
@@ -18,39 +18,28 @@ class ErrorRetry extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(48),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: AppTheme.danger.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 64,
-                color: AppColors.stopButton,
-              ),
+              child: Icon(icon, size: 64, color: AppColors.stopButton),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Oops! Something went wrong',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: AppTheme.headingMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               message,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black54,
-              ),
+              style: AppTheme.bodyMuted,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -58,15 +47,7 @@ class ErrorRetry extends StatelessWidget {
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
-              style: AppTheme.glassElevatedButtonStyle(
-                tintColor: AppColors.primaryBlue,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-                borderRadius: 12,
-              ),
+              style: AppTheme.glassElevatedButtonStyle(color: AppTheme.danger),
             ),
           ],
         ),
@@ -74,4 +55,3 @@ class ErrorRetry extends StatelessWidget {
     );
   }
 }
-

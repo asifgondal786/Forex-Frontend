@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import '../../core/widgets/app_background.dart';
-import '../../routes/app_routes.dart';
+import '../../core/routes/app_routes.dart';
 import 'auth_action_context.dart';
 
 class PasswordResetScreen extends StatefulWidget {

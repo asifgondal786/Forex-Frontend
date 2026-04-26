@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -8,6 +8,8 @@ import 'providers/auth_provider.dart';
 import 'providers/broker_provider.dart';
 import 'providers/market_provider.dart';
 import 'providers/signal_provider.dart';
+import 'providers/mode_provider.dart';
+import 'services/api_service.dart';
 import 'features/auth/auth_gate.dart';
 
 void main() async {
@@ -21,10 +23,11 @@ class TajirApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final api = ApiService();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AgentProvider()),
+        ChangeNotifierProvider(create: (_) => AgentProvider(api)),
         ChangeNotifierProvider(create: (_) => BrokerProvider()),
         ChangeNotifierProvider(create: (_) => MarketProvider()),
         ChangeNotifierProvider(create: (_) => SignalProvider()),
@@ -38,3 +41,4 @@ class TajirApp extends StatelessWidget {
     );
   }
 }
+

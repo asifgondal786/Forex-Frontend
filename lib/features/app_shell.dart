@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
-import 'features/dashboard/dashboard_screen.dart';
-import 'features/signals/signal_screen.dart';
-import 'features/charts/chart_screen.dart';
-import 'features/agent/agent_screen.dart';
-import 'features/settings/settings_screen.dart';
-import 'shared/widgets/bottom_nav_bar.dart';
+﻿import 'package:flutter/material.dart';
+import '../core/theme/app_theme.dart';
+import 'dashboard/dashboard_screen.dart';
+import 'signals/signal_screen.dart';
+import 'charts/chart_screen.dart';
+import 'agent/agent_screen.dart';
+import 'settings/settings_screen.dart';
+import '../shared/widgets/bottom_nav_bar.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -17,12 +17,12 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    DashboardScreen(),
-    SignalScreen(),
-    ChartScreen(),
-    AgentScreen(),
-    SettingsScreen(),
+  final List<Widget> _screens = [
+    const DashboardScreen(),
+    const SignalScreen(),
+    const ChartScreen(),
+    const AgentScreen(),
+    const SettingsScreen(),
   ];
 
   @override

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -307,7 +308,7 @@ class _EntryField extends StatelessWidget {
             style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
         const SizedBox(height: 4),
         Text(
-          value?.toStringAsFixed(5) ?? '—',
+          value?.toStringAsFixed(5) ?? 'â€”',
           style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w700),
         ),
       ],
@@ -331,11 +332,11 @@ class _IndicatorsCard extends StatelessWidget {
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary)),
           const SizedBox(height: 14),
-          _IndicatorRow('RSI (14)', '—', 'Neutral', AppColors.gold),
+          _IndicatorRow('RSI (14)', 'â€”', 'Neutral', AppColors.gold),
           const SizedBox(height: 10),
-          _IndicatorRow('MACD', '—', 'Neutral', AppColors.gold),
+          _IndicatorRow('MACD', 'â€”', 'Neutral', AppColors.gold),
           const SizedBox(height: 10),
-          _IndicatorRow('EMA 20/50', '—', 'Neutral', AppColors.gold),
+          _IndicatorRow('EMA 20/50', 'â€”', 'Neutral', AppColors.gold),
           const SizedBox(height: 10),
           Center(
             child: Text('Indicators load when backend returns data.',

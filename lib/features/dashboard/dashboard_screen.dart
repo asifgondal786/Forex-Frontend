@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -83,7 +84,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
+// â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _Header extends StatelessWidget {
   @override
@@ -138,7 +139,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ── Price Ticker ─────────────────────────────────────────────────────────────
+// â”€â”€ Price Ticker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _PriceTicker extends StatelessWidget {
   @override
@@ -210,14 +211,14 @@ class _PriceChip extends StatelessWidget {
               ],
             ),
             Text(
-              data?.displayBid ?? '—',
+              data?.displayBid ?? 'â€”',
               style: TextStyle(
                   fontSize: 16, fontWeight: FontWeight.w700, color: color),
             ),
             Text(
               data != null
                   ? '${up ? '+' : ''}${data!.changePercent.toStringAsFixed(2)}%'
-                  : '—',
+                  : 'â€”',
               style: TextStyle(fontSize: 11, color: color),
             ),
           ],
@@ -227,7 +228,7 @@ class _PriceChip extends StatelessWidget {
   }
 }
 
-// ── Signal Card ──────────────────────────────────────────────────────────────
+// â”€â”€ Signal Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SignalCard extends StatelessWidget {
   @override
@@ -328,7 +329,7 @@ class _PriceLabel extends StatelessWidget {
         Text(label,
             style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
         Text(
-          value?.toStringAsFixed(5) ?? '—',
+          value?.toStringAsFixed(5) ?? 'â€”',
           style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
         ),
       ],
@@ -336,7 +337,7 @@ class _PriceLabel extends StatelessWidget {
   }
 }
 
-// ── Sentiment Card ───────────────────────────────────────────────────────────
+// â”€â”€ Sentiment Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SentimentCard extends StatelessWidget {
   final Map<String, dynamic>? sentiment;
@@ -408,7 +409,7 @@ class _SentimentCard extends StatelessWidget {
   }
 }
 
-// ── Agent Status Card ────────────────────────────────────────────────────────
+// â”€â”€ Agent Status Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _AgentStatusCard extends StatelessWidget {
   @override
@@ -452,7 +453,7 @@ class _AgentStatusCard extends StatelessWidget {
   }
 }
 
-// ── News Section ─────────────────────────────────────────────────────────────
+// â”€â”€ News Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _NewsSection extends StatelessWidget {
   final List<Map<String, dynamic>> news;

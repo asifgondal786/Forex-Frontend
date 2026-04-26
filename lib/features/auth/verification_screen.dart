@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import '../../core/widgets/app_background.dart';
 import '../../core/utils/runtime_url_resolver.dart';
-import '../../routes/app_routes.dart';
+import '../../core/routes/app_routes.dart';
 import '../../services/api_service.dart';
 import 'auth_action_context.dart';
 
