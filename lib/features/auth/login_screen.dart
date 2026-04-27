@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'signup_screen.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
@@ -296,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text("Don't have an account? ",
                           style: TextStyle(
                               color: Colors.grey[500], fontSize: 13)),
-                      GestureDetector(
+                      MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(
                         onTap: () =>
                             Navigator.pushNamed(context, '/signup'),
                         child: const Text('Sign Up',
@@ -608,6 +609,8 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
         ],
       );
 }
+
+
 
 
 

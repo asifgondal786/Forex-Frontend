@@ -6,6 +6,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import '../auth/login_screen.dart';
 import 'package:provider/provider.dart';
 
 
@@ -322,8 +323,10 @@ class SettingsScreen extends StatelessWidget {
     } catch (_) {}
 
     if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, AppRoutes.login, (route) => false);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => LoginScreen(onLoginSuccess: () {})),
+        (route) => false,
+      );
     }
   }
 }
@@ -591,6 +594,8 @@ class _ErrorBanner extends StatelessWidget {
         ),
       );
 }
+
+
 
 
 

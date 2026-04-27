@@ -117,12 +117,12 @@ class _ChartScreenState extends State<ChartScreen> {
       );
       final values = (raw['values'] as List? ?? [])
           .cast<Map<String, dynamic>>();
-      setState(() {
+      if (mounted) setState(() {
         _candles = values.map(_Candle.fromJson).toList();
         if (_candles.isEmpty) _candles = _mockCandles(pair);
       });
     } catch (e) {
-      setState(() {
+      if (mounted) setState(() {
         _error   = e.toString();
         _candles = _mockCandles(_selectedPair);
       });
