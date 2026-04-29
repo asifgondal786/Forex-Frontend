@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'signup_screen.dart';
 import '../../../core/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -260,7 +260,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 54,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _handleLogin,
-                              style: AppTheme.glassElevatedButtonStyle(color: AppTheme.primary),
+                              style: AppTheme.glassElevatedButtonStyle(
+                                  color: AppTheme.primary),
                               child: _isLoading
                                   ? SizedBox(
                                       height: 24,
@@ -294,18 +295,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Don't have an account? ",
-                          style: TextStyle(
-                              color: Colors.grey[500], fontSize: 13)),
-                      MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(
-                        onTap: () =>
-                            Navigator.pushNamed(context, '/signup'),
-                        child: const Text('Sign Up',
+                      Text(
+                        "Don't have an account? ",
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: 13),
+                      ),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/signup'),
+                          child: const Text(
+                            'Sign Up',
                             style: TextStyle(
-                                color: Color(0xFF3B82F6),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                                decoration: TextDecoration.underline)),
+                              color: Color(0xFF3B82F6),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -609,8 +618,3 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
         ],
       );
 }
-
-
-
-
-

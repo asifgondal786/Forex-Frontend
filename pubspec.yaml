@@ -12,6 +12,8 @@ dependencies:
 
   # Phase 16 — Professional Charting
   flutter_inappwebview: ^6.1.5
+  # stipe and payfast
+  flutter_stripe: ^10.2.0
 
   # UI
   cupertino_icons: ^1.0.8
@@ -59,3 +61,4 @@ flutter:
   assets:
     - assets/images/
     - assets/tradingview_chart.html
+# 

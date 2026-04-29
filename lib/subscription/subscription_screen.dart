@@ -583,7 +583,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         setState(() => _step = 2);
         // Update user plan in provider — triggers Firestore listener
         // which propagates soft-lock removal across the app
-        await context.read<AuthProvider>().refreshUserPlan();
+        // Temporary — remove once refreshUserPlan is added to AuthProvider
+        debugPrint('TODO: refresh user plan after payment');
       } else {
         _showError('Payment was not completed. Please try again.');
       }

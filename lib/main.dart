@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'providers/mode_provider.dart';
 import 'services/firebase_service.dart';
 import 'core/models/app_models.dart';
@@ -14,6 +14,7 @@ import 'providers/signal_provider.dart';
 import 'providers/mode_provider.dart';
 import 'services/api_service.dart';
 import 'features/auth/auth_gate.dart';
+import 'features/auth/signup_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,9 @@ class TajirApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         home: const AuthGate(),
+        routes: {
+          '/signup': (context) => const SignupScreen(),
+        },
       ),
     );
   }
