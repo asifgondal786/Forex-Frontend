@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/agent_provider.dart';
 import '../core/theme/app_theme.dart';
@@ -7,6 +7,7 @@ import 'signals/signal_screen.dart';
 import 'charts/chart_screen.dart';
 import 'agent/agent_screen.dart';
 import 'settings/settings_screen.dart';
+
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});

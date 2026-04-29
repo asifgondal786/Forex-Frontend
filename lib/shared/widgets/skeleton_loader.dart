@@ -52,7 +52,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: scheme.onSurface.withOpacity(0.1),
+            color: scheme.onSurface.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         ),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_colors.dart';
 
@@ -25,7 +25,7 @@ class ErrorRetry extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.danger.withOpacity(0.1),
+                color: AppTheme.danger.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 64, color: AppColors.stopButton),

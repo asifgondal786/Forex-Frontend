@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'providers/mode_provider.dart';
 import 'services/firebase_service.dart';
-import 'core/models/app_models.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -11,7 +10,6 @@ import 'providers/auth_provider.dart';
 import 'providers/broker_provider.dart';
 import 'providers/market_provider.dart';
 import 'providers/signal_provider.dart';
-import 'providers/mode_provider.dart';
 import 'services/api_service.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/auth/signup_screen.dart';

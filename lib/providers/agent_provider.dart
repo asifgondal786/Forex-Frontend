@@ -1,6 +1,5 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import '../core/models/app_models.dart';
 import '../services/api_service.dart';
 
 enum AgentMode { off, semiAuto, fullAuto }
@@ -109,10 +108,10 @@ class AgentProvider extends ChangeNotifier {
   Future<void> _fetchStatus() async {
     try {
       final data = await _api.fetchAgentStatus();
-      final modeStr = data['mode'] as String? ?? 'off';
-      _mode = modeStr == 'full_auto'
+      final _modeStr = data['mode'] as String? ?? 'off';
+      _mode = _modeStr == 'full_auto'
           ? AgentMode.fullAuto
-          : modeStr == 'semi_auto'
+          : _modeStr == 'semi_auto'
               ? AgentMode.semiAuto
               : AgentMode.off;
 
@@ -144,7 +143,7 @@ class AgentProvider extends ChangeNotifier {
         _pendingTrades = [];
         _pollTimer?.cancel();
       } else {
-        final modeStr = newMode == AgentMode.fullAuto ? 'full_auto' : 'semi_auto';
+        final _modeStr = newMode == AgentMode.fullAuto ? 'full_auto' : 'semi_auto';
         await _api.startAgent();
         _startPolling();
       }

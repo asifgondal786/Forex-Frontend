@@ -48,7 +48,7 @@ class GlobalSnackBar {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: bgColor.withOpacity(0.3),
+                  color: bgColor.withValues(alpha: 0.3),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),

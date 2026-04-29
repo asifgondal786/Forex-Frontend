@@ -1,7 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../core/models/app_models.dart';
 import '../../core/theme/app_theme.dart';
-import '../../providers/signal_provider.dart';
 
 class SignalCard extends StatelessWidget {
   final SignalData signal;
@@ -53,9 +52,9 @@ class SignalCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: _actionColor().withOpacity(0.15),
+              color: _actionColor().withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _actionColor().withOpacity(0.4)),
+              border: Border.all(color: _actionColor().withValues(alpha: 0.4)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -224,7 +223,7 @@ class SignalCard extends StatelessWidget {
   }
 
   Color _actionBorderColor() {
-    return _actionColor().withOpacity(0.25);
+    return _actionColor().withValues(alpha: 0.25);
   }
 
   IconData _actionIcon() {
@@ -255,9 +254,9 @@ class _DetailChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,7 +264,7 @@ class _DetailChip extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: color.withOpacity(0.7),
+              color: color.withValues(alpha: 0.7),
               fontSize: 9,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,

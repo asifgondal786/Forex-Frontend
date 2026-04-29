@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class AppTheme {
-  // ── Core colors ──────────────────────────────────────────────────────
+  // -- Core colors ------------------------------------------------------
   static const Color primary       = Color(0xFF2196F3);
   static const Color accent        = Color(0xFF00BCD4);
   static const Color gold          = Color(0xFFFFC107);
@@ -9,17 +9,17 @@ class AppTheme {
   static const Color success       = Color(0xFF4CAF50);
   static const Color warning       = Color(0xFFFF9800);
 
-  // ── Backgrounds ───────────────────────────────────────────────────────
+  // -- Backgrounds -------------------------------------------------------
   static const Color bg0           = Color(0xFF0A0E1A);
   static const Color bg1           = Color(0xFF0F1623);
   static const Color bg2           = Color(0xFF161D2E);
   static const Color bg3           = Color(0xFF1E2740);
 
-  // ── Text ──────────────────────────────────────────────────────────────
+  // -- Text --------------------------------------------------------------
   static const Color textPrimary   = Color(0xFFE8EAF0);
   static const Color textSecondary = Color(0xFF8892A4);
 
-  // ── Theme ─────────────────────────────────────────────────────────────
+  // -- Theme -------------------------------------------------------------
   static ThemeData get darkTheme => ThemeData(
     brightness: Brightness.dark,
     scaffoldBackgroundColor: bg0,
@@ -51,16 +51,16 @@ class AppTheme {
     ),
   );
 
-  // ── Button styles ──────────────────────────────────────────────────────
+  // -- Button styles ------------------------------------------------------
   static ButtonStyle glassElevatedButtonStyle({Color? color, double radius = 10}) {
     final c = color ?? primary;
     return ElevatedButton.styleFrom(
-      backgroundColor: c.withOpacity(0.15),
+      backgroundColor: c.withValues(alpha: 0.15),
       foregroundColor: c,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
-        side: BorderSide(color: c.withOpacity(0.4)),
+        side: BorderSide(color: c.withValues(alpha: 0.4)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
     );
@@ -82,7 +82,7 @@ class AppTheme {
   static ButtonStyle successButtonStyle({double radius = 10}) =>
       glassElevatedButtonStyle(color: success, radius: radius);
 
-  // ── Card / container decorations ──────────────────────────────────────
+  // -- Card / container decorations --------------------------------------
   static BoxDecoration cardDecoration({Color? color, double radius = 12}) =>
       BoxDecoration(
         color: color ?? bg1,
@@ -92,21 +92,21 @@ class AppTheme {
 
   static BoxDecoration glassDecoration({double radius = 12}) =>
       BoxDecoration(
-        color: bg2.withOpacity(0.8),
+        color: bg2.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: primary.withOpacity(0.2), width: 0.5),
+        border: Border.all(color: primary.withValues(alpha: 0.2), width: 0.5),
       );
 
-  /// Glowing card decoration — used in AgentScreen and other AI screens
+  /// Glowing card decoration � used in AgentScreen and other AI screens
   static BoxDecoration glowCard({Color? color, double radius = 14, double glowRadius = 12, double glowOpacity = 0.25, double intensity = 1.0}) {
     final c = color ?? primary;
     return BoxDecoration(
       color: bg1,
       borderRadius: BorderRadius.circular(radius),
-      border: Border.all(color: c.withOpacity(0.35), width: 0.8),
+      border: Border.all(color: c.withValues(alpha: 0.35), width: 0.8),
       boxShadow: [
         BoxShadow(
-          color: c.withOpacity(glowOpacity),
+          color: c.withValues(alpha: glowOpacity),
           blurRadius: glowRadius,
           spreadRadius: 1,
         ),
@@ -114,7 +114,7 @@ class AppTheme {
     );
   }
 
-  // ── Text styles ────────────────────────────────────────────────────────
+  // -- Text styles --------------------------------------------------------
   static const TextStyle headingLarge = TextStyle(
     color: textPrimary, fontSize: 22, fontWeight: FontWeight.bold,
   );

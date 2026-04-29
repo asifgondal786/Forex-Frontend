@@ -1,10 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../core/models/app_models.dart';
 import '../../core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
-import '../../core/models/app_models.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/app_models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/market_provider.dart';
 import '../../providers/signal_provider.dart';
@@ -87,7 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Header ───────────────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
   @override
@@ -142,7 +140,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-// â”€â”€ Price Ticker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Price Ticker ─────────────────────────────────────────────────────────────
 
 class _PriceTicker extends StatelessWidget {
   @override
@@ -214,14 +212,14 @@ class _PriceChip extends StatelessWidget {
               ],
             ),
             Text(
-              data?.displayBid ?? 'â€”',
+              data?.displayBid ?? '—',
               style: TextStyle(
                   fontSize: 16, fontWeight: FontWeight.w700, color: color),
             ),
             Text(
               data != null
                   ? '${up ? '+' : ''}${data!.changePercent.toStringAsFixed(2)}%'
-                  : 'â€”',
+                  : '—',
               style: TextStyle(fontSize: 11, color: color),
             ),
           ],
@@ -231,7 +229,7 @@ class _PriceChip extends StatelessWidget {
   }
 }
 
-// â”€â”€ Signal Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Signal Card ──────────────────────────────────────────────────────────────
 
 class _SignalCard extends StatelessWidget {
   @override
@@ -332,7 +330,7 @@ class _PriceLabel extends StatelessWidget {
         Text(label,
             style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
         Text(
-          value?.toStringAsFixed(5) ?? 'â€”',
+          value?.toStringAsFixed(5) ?? '—',
           style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
         ),
       ],
@@ -340,7 +338,7 @@ class _PriceLabel extends StatelessWidget {
   }
 }
 
-// â”€â”€ Sentiment Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sentiment Card ───────────────────────────────────────────────────────────
 
 class _SentimentCard extends StatelessWidget {
   final Map<String, dynamic>? sentiment;
@@ -412,7 +410,7 @@ class _SentimentCard extends StatelessWidget {
   }
 }
 
-// â”€â”€ Agent Status Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Agent Status Card ────────────────────────────────────────────────────────
 
 class _AgentStatusCard extends StatelessWidget {
   @override
@@ -456,7 +454,7 @@ class _AgentStatusCard extends StatelessWidget {
   }
 }
 
-// â”€â”€ News Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── News Section ─────────────────────────────────────────────────────────────
 
 class _NewsSection extends StatelessWidget {
   final List<Map<String, dynamic>> news;

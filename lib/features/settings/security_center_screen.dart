@@ -1,10 +1,9 @@
-﻿// lib/features/settings/security_center_screen.dart
-// Security centre â€” PIN lock, biometric toggle, session info.
+// lib/features/settings/security_center_screen.dart
+// Security centre — PIN lock, biometric toggle, session info.
 // Uses AuthProvider (not the deleted UserProvider).
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/security_service.dart';
@@ -83,7 +82,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
           obscureText: true,
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: const InputDecoration(
-            hintText: '4â€“6 digit PIN',
+            hintText: '4–6 digit PIN',
             hintStyle: TextStyle(color: AppColors.textSecondary),
             counterStyle: TextStyle(color: AppColors.textSecondary),
           ),
@@ -118,7 +117,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
         .showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -137,7 +136,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // â”€â”€ Account info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Account info ───────────────────────────────────────────────────
           _SectionCard(
             children: [
               ListTile(
@@ -157,7 +156,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
 
           const SizedBox(height: 16),
 
-          // â”€â”€ Authentication â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Authentication ─────────────────────────────────────────────────
           _SectionHeader(title: 'Authentication'),
           _SectionCard(
             children: [
@@ -186,7 +185,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
                 activeColor: AppColors.primary,
                 title: const Text('PIN Lock',
                     style: TextStyle(color: AppColors.textPrimary)),
-                subtitle: const Text('4â€“6 digit app lock',
+                subtitle: const Text('4–6 digit app lock',
                     style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 12)),
                 secondary: const Icon(Icons.lock_outline,
@@ -197,7 +196,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
 
           const SizedBox(height: 16),
 
-          // â”€â”€ Session â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Session ────────────────────────────────────────────────────────
           _SectionHeader(title: 'Session'),
           _SectionCard(
             children: [
@@ -254,7 +253,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
 
           const SizedBox(height: 32),
 
-          // â”€â”€ Disclaimer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Disclaimer ─────────────────────────────────────────────────────
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Text(
@@ -273,7 +272,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
   }
 }
 
-// â”€â”€ Helper widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helper widgets ────────────────────────────────────────────────────────────
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader({required this.title});

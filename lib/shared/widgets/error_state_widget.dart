@@ -27,10 +27,10 @@ class ErrorStateWidget extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.08),
+                color: Colors.red.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 36, color: Colors.red.withOpacity(0.6)),
+              child: Icon(icon, size: 36, color: Colors.red.withValues(alpha: 0.6)),
             ),
             const SizedBox(height: 20),
             Text(
@@ -47,7 +47,7 @@ class ErrorStateWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: scheme.onSurface.withOpacity(0.5),
+                color: scheme.onSurface.withValues(alpha: 0.5),
                 height: 1.5,
               ),
             ),

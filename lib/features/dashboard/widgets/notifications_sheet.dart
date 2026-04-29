@@ -1,18 +1,16 @@
-﻿// lib/features/dashboard/widgets/notifications_sheet.dart
+// lib/features/dashboard/widgets/notifications_sheet.dart
 // Bottom sheet showing push notification history.
 // Uses FirebaseService (not deleted LiveUpdatesService / HeaderProvider).
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/models/app_notification.dart';
 import '../../../services/firebase_service.dart';
 
 class NotificationsSheet extends StatefulWidget {
   const NotificationsSheet({super.key});
 
-  /// Convenience method â€” call from any screen to show the sheet.
+  /// Convenience method — call from any screen to show the sheet.
   static void show(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -46,7 +44,7 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
         _loading = false;
       });
     } catch (_) {
-      // Fallback â€” show empty gracefully
+      // Fallback — show empty gracefully
       setState(() => _loading = false);
     }
   }
@@ -57,7 +55,7 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
     setState(() => _notifications = []);
   }
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -139,7 +137,7 @@ class _NotificationsSheetState extends State<NotificationsSheet> {
   }
 }
 
-// â”€â”€ Notification tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Notification tile ─────────────────────────────────────────────────────────
 class _NotificationTile extends StatelessWidget {
   final Map<String, dynamic> n;
   const _NotificationTile({required this.n});
@@ -207,7 +205,7 @@ class _NotificationTile extends StatelessWidget {
   }
 }
 
-// â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Empty state ───────────────────────────────────────────────────────────────
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

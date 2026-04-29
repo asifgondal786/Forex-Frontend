@@ -1,4 +1,4 @@
-ï»¿// lib/features/settings/connect_broker_sheet.dart
+// lib/features/settings/connect_broker_sheet.dart
 //
 // Bottom sheet for connecting an Pepperstone live trading account.
 // Posts credentials to /v1/api/accounts/connect/forex.
@@ -13,7 +13,7 @@ import '../../services/api_service.dart';
 class ConnectBrokerSheet extends StatefulWidget {
   const ConnectBrokerSheet({super.key});
 
-  /// Convenience launcher â€” call from any screen.
+  /// Convenience launcher — call from any screen.
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
       context: context,
@@ -33,8 +33,7 @@ class ConnectBrokerSheet extends StatefulWidget {
 
 class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
   // palette
-  static const _kCard    = Color(0xFF161D2E);
-  static const _kBorder  = Color(0xFF1E2A3D);
+  static   static const _kBorder  = Color(0xFF1E2A3D);
   static const _kGold    = Color(0xFFD4A853);
   static const _kGreen   = Color(0xFF00C896);
   static const _kRed     = Color(0xFFFF4560);
@@ -235,7 +234,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
                   return 'API key is required';
                 }
                 if (v.trim().length < 20) {
-                  return 'API key looks too short â€” check and try again';
+                  return 'API key looks too short — check and try again';
                 }
                 return null;
               },
@@ -317,7 +316,7 @@ class _ConnectBrokerSheetState extends State<ConnectBrokerSheet> {
             Center(
               child: TextButton(
                 onPressed: () {
-                  // openLink handled by host â€” launches Pepperstone API key page
+                  // openLink handled by host — launches Pepperstone API key page
                 },
                 child: const Text(
                   'How to get an Pepperstone API key ?',

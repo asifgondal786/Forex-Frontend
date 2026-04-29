@@ -8,8 +8,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/models/user.dart';
-import '../../providers/auth_provider.dart';
 import '../../services/payment_service.dart'; // wire Stripe + PayFast here
 
 // ── Palette ───────────────────────────────────────────────────────────────────
@@ -18,13 +16,11 @@ const _kCard   = Color(0xFF161D2E);
 const _kBorder = Color(0xFF1E2A3D);
 const _kGold   = Color(0xFFD4A853);
 const _kGreen  = Color(0xFF00C896);
-const _kBlue   = Color(0xFF3B82F6);
 const _kRed    = Color(0xFFFF4560);
 const _kText   = Color(0xFFE2E8F0);
 const _kSub    = Color(0xFF64748B);
 
 // ── Single Pro plan ───────────────────────────────────────────────────────────
-const _kPlanName     = 'Pro';
 const _kPlanPrice    = 10.0;
 const _kPlanFeatures = [
   'All 8 currency pairs',
@@ -170,9 +166,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _kRed.withOpacity(0.08),
+                color: _kRed.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _kRed.withOpacity(0.3)),
+                border: Border.all(color: _kRed.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +200,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             decoration: BoxDecoration(
               color: _kCard,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _kGold.withOpacity(0.4), width: 1.5),
+              border: Border.all(color: _kGold.withValues(alpha: 0.4), width: 1.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +211,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _kGold.withOpacity(0.12),
+                        color: _kGold.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text(
@@ -316,9 +312,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: _kGold.withOpacity(0.08),
+              color: _kGold.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _kGold.withOpacity(0.25)),
+              border: Border.all(color: _kGold.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
@@ -391,7 +387,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               onPressed: _processing ? null : _initiatePayment,
               style: FilledButton.styleFrom(
                 backgroundColor: _kGold,
-                disabledBackgroundColor: _kGold.withOpacity(0.4),
+                disabledBackgroundColor: _kGold.withValues(alpha: 0.4),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
               ),
@@ -422,10 +418,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF00A86B).withOpacity(0.07),
+          color: const Color(0xFF00A86B).withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: const Color(0xFF00A86B).withOpacity(0.2)),
+              color: const Color(0xFF00A86B).withValues(alpha: 0.2)),
         ),
         child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,10 +443,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF635BFF).withOpacity(0.07),
+        color: const Color(0xFF635BFF).withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: const Color(0xFF635BFF).withOpacity(0.2)),
+            color: const Color(0xFF635BFF).withValues(alpha: 0.2)),
       ),
       child: const Text(
         'You\'ll be redirected to Stripe\'s secure checkout. '
@@ -473,7 +469,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: _kGreen.withOpacity(0.12),
+                color: _kGreen.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle_rounded,
@@ -627,7 +623,7 @@ class _GatewayTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: selected ? option.color.withOpacity(0.08) : _kCard,
+          color: selected ? option.color.withValues(alpha: 0.08) : _kCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? option.color : _kBorder,
@@ -640,7 +636,7 @@ class _GatewayTile extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: option.color.withOpacity(0.12),
+                color: option.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(option.icon, color: option.color, size: 18),

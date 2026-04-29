@@ -1,4 +1,4 @@
-﻿// lib/features/charts/chart_screen.dart
+// lib/features/charts/chart_screen.dart
 //
 // Full OHLC candlestick chart screen.
 // Pair selector + timeframe tabs + live data from fetchOHLCData.
@@ -9,11 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../providers/market_provider.dart';
 import '../../services/api_service.dart';
 
-// ── Palette (matches rest of app) ────────────────────────────────────────────
+// -- Palette (matches rest of app) --------------------------------------------
 const _kBg     = Color(0xFF0A0E1A);
 const _kCard   = Color(0xFF161D2E);
 const _kBorder = Color(0xFF1E2A3D);
@@ -24,7 +23,7 @@ const _kBlue   = Color(0xFF3B82F6);
 const _kText   = Color(0xFFE2E8F0);
 const _kSub    = Color(0xFF64748B);
 
-// ── Timeframe options ─────────────────────────────────────────────────────────
+// -- Timeframe options ---------------------------------------------------------
 const _timeframes = [
   _TF('15m', '15min'),
   _TF('1h',  '1h'),
@@ -38,7 +37,7 @@ class _TF {
   const _TF(this.label, this.apiInterval);
 }
 
-// ── OHLC candle model ─────────────────────────────────────────────────────────
+// -- OHLC candle model ---------------------------------------------------------
 class _Candle {
   final DateTime time;
   final double open;
@@ -69,9 +68,9 @@ class _Candle {
       v == null ? 0.0 : double.tryParse(v.toString()) ?? 0.0;
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
+// -----------------------------------------------------------------------------
 // ChartScreen
-// ═════════════════════════════════════════════════════════════════════════════
+// -----------------------------------------------------------------------------
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
 
@@ -81,8 +80,7 @@ class ChartScreen extends StatefulWidget {
 
 class _ChartScreenState extends State<ChartScreen> {
   int _tfIndex  = 1; // default 1h
-  bool _loading = false;
-  String? _error;
+  bool _loading = false;  String? _error;
   List<_Candle> _candles = [];
 
   // Stats
@@ -173,7 +171,7 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  // ── Header ────────────────────────────────────────────────────────────────
+  // -- Header ----------------------------------------------------------------
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -206,7 +204,7 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  // ── Pair selector ─────────────────────────────────────────────────────────
+  // -- Pair selector ---------------------------------------------------------
   Widget _buildPairSelector(List<String> pairs, MarketProvider market) {
     return SizedBox(
       height: 40,
@@ -250,7 +248,7 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  // ── Timeframe bar ─────────────────────────────────────────────────────────
+  // -- Timeframe bar ---------------------------------------------------------
   Widget _buildTimeframeBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -286,7 +284,7 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  // ── Stat row ─────────────────────────────────────────────────────────────
+  // -- Stat row -------------------------------------------------------------
   Widget _buildStatRow() {
     if (_candles.isEmpty) return const SizedBox(height: 8);
     final color = _bullish ? _kGreen : _kRed;
@@ -338,7 +336,7 @@ class _ChartScreenState extends State<ChartScreen> {
     ],
   );
 
-  // ── Chart ─────────────────────────────────────────────────────────────────
+  // -- Chart -----------------------------------------------------------------
   Widget _buildChart() {
     if (_loading && _candles.isEmpty) return _buildShimmer();
     if (_candles.isEmpty) {
@@ -463,7 +461,7 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  // ── Shimmer placeholder ───────────────────────────────────────────────────
+  // -- Shimmer placeholder ---------------------------------------------------
   Widget _buildShimmer() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
@@ -480,7 +478,7 @@ class _ChartScreenState extends State<ChartScreen> {
     );
   }
 
-  // ── Bottom info bar ───────────────────────────────────────────────────────
+  // -- Bottom info bar -------------------------------------------------------
   Widget _buildBottomInfo() {
     if (_candles.isEmpty) return const SizedBox(height: 12);
     final last = _candles.last;

@@ -1,5 +1,4 @@
-﻿import 'package:flutter/material.dart';
-import '../../core/models/app_models.dart';
+import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -225,7 +224,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
                           color: AppTheme.bg3,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: AppTheme.accent.withOpacity(0.3)),
+                              color: AppTheme.accent.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           s,
@@ -273,7 +272,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
                 color: msg.isUser
                     ? AppTheme.primary
                     : msg.isError
-                        ? AppTheme.danger.withOpacity(0.15)
+                        ? AppTheme.danger.withValues(alpha: 0.15)
                         : AppTheme.bg2,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
@@ -282,7 +281,7 @@ class _NlpChatSheetContentState extends State<_NlpChatSheetContent> {
                   bottomRight: Radius.circular(msg.isUser ? 4 : 16),
                 ),
                 border: msg.isError
-                    ? Border.all(color: AppTheme.danger.withOpacity(0.3))
+                    ? Border.all(color: AppTheme.danger.withValues(alpha: 0.3))
                     : null,
               ),
               child: Text(
@@ -439,7 +438,7 @@ class _TypingDotState extends State<_TypingDot>
         height: 6,
         margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color: AppTheme.textSecondary.withOpacity(_anim.value),
+          color: AppTheme.textSecondary.withValues(alpha: _anim.value),
           shape: BoxShape.circle,
         ),
       ),
