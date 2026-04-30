@@ -1,4 +1,4 @@
-﻿import 'app_theme.dart';
+import 'app_theme.dart';
 
 class AppColors {
   static const primary       = AppTheme.primary;
