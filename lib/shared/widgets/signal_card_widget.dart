@@ -48,7 +48,6 @@ class SignalCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          // Action badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
@@ -97,7 +96,6 @@ class SignalCard extends StatelessWidget {
               ],
             ),
           ),
-          // Confidence ring
           SizedBox(
             width: 44,
             height: 44,
@@ -165,7 +163,7 @@ class SignalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'AI ANALYSIS',
             style: TextStyle(
               color: AppTheme.textSecondary,
@@ -193,10 +191,10 @@ class SignalCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded,
+          Icon(Icons.info_outline_rounded,
               color: AppTheme.textSecondary, size: 12),
           const SizedBox(width: 6),
-          const Expanded(
+          Expanded(
             child: Text(
               'AI signals are not financial advice. Trade at your own risk.',
               style: TextStyle(
@@ -284,4 +282,3 @@ class _DetailChip extends StatelessWidget {
     );
   }
 }
-

@@ -8,7 +8,6 @@ import 'charts/chart_screen.dart';
 import 'agent/agent_screen.dart';
 import 'settings/settings_screen.dart';
 
-
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
   @override
@@ -70,5 +69,3 @@ class _AppShellState extends State<AppShell> {
     );
   }
 }
-
-

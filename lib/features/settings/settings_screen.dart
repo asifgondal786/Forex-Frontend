@@ -92,7 +92,7 @@ class SettingsScreen extends StatelessWidget {
             iconColor: _kAmber,
             title: 'Configure limits',
             subtitle:
-                'Daily loss 2.0% · Max trades 5 · Risk/trade 1.0%',
+                'Daily loss 2.0% ï¿½ Max trades 5 ï¿½ Risk/trade 1.0%',
 
 
             onTap: () => _showRiskSheet(context, null),
